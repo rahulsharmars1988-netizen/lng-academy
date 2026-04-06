@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LNG Academy — Interactive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060912;--surf:#0C1220;--card:#111827;--card2:#161F30;
+  --b1:#1C2B40;--b2:#253650;
+  --fl:#FF6320;--fl2:#FF9060;--fld:rgba(255,99,32,.1);--fldb:rgba(255,99,32,.18);
+  --ic:#00D4F0;--ic2:#80E8FA;--icd:rgba(0,212,240,.08);
+  --gd:#FFD060;--gdd:rgba(255,208,96,.1);
+  --gn:#20C05A;--gnd:rgba(32,192,90,.1);
+  --rd:#FF3060;--rdd:rgba(255,48,96,.1);
+  --vi:#8B5CF6;--vid:rgba(139,92,246,.1);
+  --tx:#D4E4F4;--mu:#4E6A84;--dim:#1A2840;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:var(--sans);font-size:14px;color:var(--tx)}
+
+/* ── LAYOUT ── */
+#wrap{display:flex;height:100vh;overflow:hidden}
+#sidebar{width:270px;min-width:270px;background:var(--surf);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;transition:width .25s}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ── SIDEBAR ── */
+.sb-head{padding:1.1rem 1rem .8rem;border-bottom:1px solid var(--b1)}
+.sb-logo{font-weight:700;font-size:1rem;display:flex;align-items:center;gap:.5rem}
+.sb-logo-icon{width:28px;height:28px;background:var(--fl);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.sb-logo-text{color:var(--tx)}
+.sb-logo-text em{color:var(--fl);font-style:normal}
+.sb-tagline{font-size:.62rem;color:var(--mu);margin-top:2px;text-transform:uppercase;letter-spacing:.1em}
+
+.sb-prog{padding:.7rem 1rem;border-bottom:1px solid var(--b1)}
+.sp-top{display:flex;justify-content:space-between;margin-bottom:.35rem}
+.sp-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mu)}
+.sp-pct{font-family:var(--mono);font-size:.65rem;color:var(--gd)}
+.sp-bar{height:3px;background:var(--b1);border-radius:2px;overflow:hidden;margin-bottom:.5rem}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--fl),var(--gd));border-radius:2px;transition:width .6s ease;width:0%}
+.sp-stats{display:flex;gap:1rem}
+.sp-stat{font-size:.65rem;color:var(--mu)}
+.sp-stat strong{color:var(--gd);font-family:var(--mono)}
+
+.sb-nav{flex:1;overflow-y:auto;padding:.4rem 0;scrollbar-width:thin;scrollbar-color:var(--dim) transparent}
+.sb-sec{padding:.55rem 1rem .2rem;font-size:.58rem;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);font-weight:600}
+.sn{display:flex;align-items:center;gap:.6rem;padding:.48rem 1rem;cursor:pointer;border-left:2px solid transparent;transition:all .12s;position:relative}
+.sn:hover{background:rgba(255,255,255,.02)}
+.sn.active{background:var(--fld);border-left-color:var(--fl)}
+.sn-ico{font-size:.85rem;width:18px;text-align:center;flex-shrink:0}
+.sn-txt{font-size:.77rem;font-weight:500;flex:1;line-height:1.25}
+.sn-badge{font-family:var(--mono);font-size:.52rem;padding:.1rem .4rem;border-radius:20px;background:var(--dim);color:var(--mu)}
+.sn.active .sn-badge{background:var(--fldb);color:var(--fl)}
+.sn.done .sn-badge{background:var(--gnd);color:var(--gn)}
+.sn.done::after{content:'✓';position:absolute;right:.9rem;font-size:.65rem;color:var(--gn)}
+
+/* ── TOPBAR ── */
+#topbar{height:52px;min-height:52px;background:var(--surf);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 1.5rem;gap:1rem}
+.tb-title{font-weight:600;font-size:.9rem;flex:1}
+.tb-xp{font-family:var(--mono);font-size:.68rem;color:var(--gd);display:flex;align-items:center;gap:.4rem}
+.tb-streak{font-size:.68rem;color:var(--fl2);display:flex;align-items:center;gap:.3rem}
+.tb-ai-btn{padding:.35rem .9rem;background:var(--icd);border:1px solid var(--ic);color:var(--ic);font-family:var(--sans);font-size:.7rem;border-radius:20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.4rem}
+.tb-ai-btn:hover{background:var(--ic);color:var(--bg)}
+
+/* ── CONTENT AREA ── */
+#content{flex:1;overflow-y:auto;position:relative}
+.panel{display:none;min-height:100%}
+.panel.active{display:block}
+
+/* ── HOME / HERO ── */
+.hero{
+  min-height:100%;
+  background:radial-gradient(ellipse 80% 50% at 55% -10%,rgba(255,99,32,.12),transparent 60%),
+             radial-gradient(ellipse 60% 70% at 5% 90%,rgba(0,212,240,.06),transparent 60%);
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:3rem 2rem;position:relative;overflow:hidden;
+}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--b1) 1px,transparent 1px),linear-gradient(90deg,var(--b1) 1px,transparent 1px);background-size:56px 56px;opacity:.4}
+.hero-inner{position:relative;z-index:1;max-width:720px}
+.hero-pill{display:inline-flex;align-items:center;gap:.5rem;font-size:.62rem;text-transform:uppercase;letter-spacing:.15em;color:var(--fl);border:1px solid rgba(255,99,32,.3);padding:.3rem .85rem;border-radius:20px;margin-bottom:2rem}
+.pulse{width:6px;height:6px;background:var(--fl);border-radius:50%;animation:pls 2s ease infinite}
+@keyframes pls{0%,100%{box-shadow:0 0 0 0 rgba(255,99,32,.5)}50%{box-shadow:0 0 0 6px rgba(255,99,32,0)}}
+.hero h1{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:700;line-height:1.08;letter-spacing:-.02em;margin-bottom:.9rem}
+.hero h1 em{font-style:normal;color:var(--fl)}
+.hero p{color:var(--mu);font-size:.92rem;line-height:1.75;max-width:540px;margin:0 auto 2.5rem}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--b1);border:1px solid var(--b1);max-width:500px;margin:0 auto 2.5rem}
+.hstat{background:var(--card);padding:.9rem .5rem;text-align:center}
+.hstat-v{font-weight:700;font-size:1.3rem;color:var(--fl)}
+.hstat-l{font-size:.58rem;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+.hero-btns{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+.btn-hero{padding:.7rem 1.8rem;font-family:var(--sans);font-weight:600;font-size:.85rem;border-radius:6px;cursor:pointer;transition:all .18s;border:none}
+.btn-hero.primary{background:var(--fl);color:white}
+.btn-hero.primary:hover{background:var(--fl2);transform:translateY(-1px)}
+.btn-hero.ghost{background:transparent;color:var(--tx);border:1px solid var(--b2)}
+.btn-hero.ghost:hover{border-color:var(--mu)}
+
+/* ── MODULE CARDS (HOME) ── */
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.75rem;padding:1.5rem}
+.mcard{background:var(--card);border:1px solid var(--b1);border-radius:10px;padding:1.25rem;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.mcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--fl);opacity:0;transition:opacity .18s}
+.mcard:hover{border-color:var(--b2);transform:translateY(-2px)}
+.mcard:hover::before{opacity:1}
+.mcard-num{font-family:var(--mono);font-size:.6rem;color:var(--mu);margin-bottom:.6rem}
+.mcard-icon{font-size:1.7rem;margin-bottom:.6rem}
+.mcard-title{font-weight:700;font-size:.92rem;margin-bottom:.35rem}
+.mcard-desc{font-size:.76rem;color:var(--mu);line-height:1.6}
+.mcard-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.9rem;padding-top:.75rem;border-top:1px solid var(--b1)}
+.mcard-tags{display:flex;gap:.3rem;flex-wrap:wrap}
+.mtag{font-size:.56rem;padding:.12rem .45rem;border:1px solid var(--b1);border-radius:3px;color:var(--mu)}
+.mcard-time{font-family:var(--mono);font-size:.6rem;color:var(--dim)}
+
+/* ── LESSON LAYOUT ── */
+.lesson{max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.lesson-nav{display:flex;align-items:center;gap:.4rem;font-size:.68rem;color:var(--mu);margin-bottom:1.25rem}
+.lesson-nav span{cursor:pointer;transition:color .12s}
+.lesson-nav span:hover{color:var(--fl)}
+.lesson-nav .sep{color:var(--dim)}
+.lesson-h1{font-size:1.7rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.4rem}
+.lesson-meta{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.lm{font-size:.68rem;color:var(--mu);display:flex;align-items:center;gap:.3rem}
+
+/* Objectives */
+.obj-box{background:var(--icd);border:1px solid rgba(0,212,240,.2);border-radius:8px;padding:1.1rem 1.25rem;margin-bottom:2rem}
+.obj-hd{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ic);margin-bottom:.65rem;display:flex;align-items:center;gap:.4rem}
+.obj-list{list-style:none;display:flex;flex-direction:column;gap:.35rem}
+.obj-list li{font-size:.8rem;color:var(--mu);display:flex;gap:.5rem;line-height:1.5}
+.obj-list li::before{content:'›';color:var(--ic);flex-shrink:0}
+
+/* Content prose */
+.prose{margin-bottom:1.75rem}
+.prose h3{font-weight:700;font-size:.98rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem}
+.prose h3 .bar{width:3px;height:16px;background:var(--fl);border-radius:2px;flex-shrink:0}
+.prose p{color:var(--mu);font-size:.84rem;line-height:1.82;margin-bottom:.7rem}
+.prose strong{color:var(--tx)}
+.prose .highlight{background:var(--fld);border-left:3px solid var(--fl);padding:.75rem 1rem;border-radius:0 6px 6px 0;margin:.75rem 0;font-size:.82rem;color:var(--mu);line-height:1.7}
+.prose .highlight strong{color:var(--fl2)}
+.prose .info{background:var(--icd);border:1px solid rgba(0,212,240,.15);border-radius:6px;padding:.8rem 1rem;margin:.75rem 0;font-size:.8rem;color:var(--mu);line-height:1.7}
+.prose .info strong{color:var(--ic)}
+
+/* ── KNOWLEDGE CHECKS ── */
+.kc{background:var(--card);border:1px solid var(--b1);border-radius:10px;padding:1.4rem;margin:2rem 0}
+.kc-head{display:flex;align-items:center;gap:.75rem;margin-bottom:.9rem}
+.kc-tag{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;background:var(--gdd);color:var(--gd);padding:.18rem .65rem;border-radius:20px;font-weight:600}
+.kc-num{font-size:.68rem;color:var(--mu)}
+.kc-q{font-weight:600;font-size:.9rem;line-height:1.5;margin-bottom:1.1rem}
+.kc-opts{display:flex;flex-direction:column;gap:.45rem}
+.kopt{display:flex;align-items:flex-start;gap:.7rem;padding:.72rem .9rem;border:1px solid var(--b1);border-radius:6px;background:var(--surf);cursor:pointer;font-family:var(--sans);font-size:.82rem;color:var(--tx);text-align:left;transition:all .13s;width:100%}
+.kopt:hover:not(.locked){border-color:var(--b2);background:rgba(255,255,255,.015)}
+.kopt.locked{cursor:default}
+.kopt-l{font-family:var(--mono);font-size:.65rem;width:22px;height:22px;border-radius:4px;background:var(--dim);color:var(--mu);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .13s}
+.kopt.correct{border-color:var(--gn);background:var(--gnd)}
+.kopt.correct .kopt-l{background:var(--gn);color:white}
+.kopt.wrong{border-color:var(--rd);background:var(--rdd)}
+.kopt.wrong .kopt-l{background:var(--rd);color:white}
+.kopt.show-right{border-color:rgba(32,192,90,.35);opacity:.6}
+.kopt.show-right .kopt-l{background:rgba(32,192,90,.3);color:var(--gn)}
+.kc-fb{display:none;margin-top:.85rem;padding:.85rem 1rem;border-radius:6px;font-size:.8rem;line-height:1.68;animation:fbIn .25s ease}
+@keyframes fbIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.kc-fb.show{display:block}
+.kc-fb.ok{background:var(--gnd);border:1px solid rgba(32,192,90,.25)}
+.kc-fb.ok::before{content:'✅ ';font-weight:700;color:var(--gn)}
+.kc-fb.no{background:var(--rdd);border:1px solid rgba(255,48,96,.2)}
+.kc-fb.no::before{content:'💡 ';font-weight:700;color:var(--rd)}
+.kc-fb b{color:var(--tx)}
+
+/* ── SIMULATIONS ── */
+.sim{background:var(--card);border:1px solid var(--b1);border-radius:10px;overflow:hidden;margin:2rem 0}
+.sim-head{background:var(--surf);border-bottom:1px solid var(--b1);padding:.85rem 1.2rem;display:flex;align-items:center;gap:.75rem}
+.sim-tag{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;background:var(--icd);color:var(--ic);padding:.18rem .65rem;border-radius:20px;font-weight:600}
+.sim-title{font-weight:600;font-size:.87rem;flex:1}
+.sim-hint{font-size:.65rem;color:var(--mu)}
+.sim-body{padding:1.4rem}
+
+/* Canvas sims */
+canvas{display:block;border-radius:6px;background:var(--bg)}
+.sim-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;margin-top:1rem}
+.sim-ctrl{display:flex;flex-direction:column;gap:.35rem;min-width:140px;flex:1}
+.ctrl-lbl{font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mu)}
+.ctrl-val{font-family:var(--mono);font-size:.85rem;color:var(--ic2);font-weight:500}
+input[type=range]{width:100%;height:4px;border-radius:2px;appearance:none;background:var(--b1);cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:16px;height:16px;border-radius:50%;background:var(--fl);cursor:pointer;transition:transform .1s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
+input[type=range].ice::-webkit-slider-thumb{background:var(--ic)}
+input[type=range].gold::-webkit-slider-thumb{background:var(--gd)}
+.sim-metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem;margin-top:.9rem}
+.sim-metric{background:var(--surf);border:1px solid var(--b1);border-radius:6px;padding:.6rem .75rem;text-align:center}
+.sm-val{font-family:var(--mono);font-size:1rem;font-weight:700}
+.sm-lbl{font-size:.58rem;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+.sim-info{background:var(--fld);border:1px solid rgba(255,99,32,.18);border-radius:6px;padding:.7rem .9rem;font-size:.78rem;color:var(--mu);line-height:1.65;margin-top:.9rem;transition:all .35s}
+.sim-info strong{color:var(--fl2)}
+
+/* Drag & Drop chain builder */
+.dz{min-height:70px;background:var(--bg);border:2px dashed var(--b1);border-radius:8px;padding:.65rem;display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;transition:all .2s;margin-bottom:.75rem}
+.dz.hl{border-color:var(--ic);background:var(--icd)}
+.dz.done{border-color:var(--gn);border-style:solid;background:var(--gnd)}
+.dz-ph{font-size:.75rem;color:var(--dim)}
+.chip-pool{display:flex;flex-wrap:wrap;gap:.4rem;padding:.65rem;background:var(--surf);border-radius:8px;border:1px solid var(--b1)}
+.chip{padding:.4rem .85rem;border-radius:5px;background:var(--card);border:1px solid var(--b2);font-size:.75rem;cursor:grab;user-select:none;transition:all .13s;display:flex;align-items:center;gap:.35rem}
+.chip:active{cursor:grabbing;transform:scale(1.04)}
+.chip:hover{border-color:var(--mu)}
+.chip.placed{opacity:.3;cursor:not-allowed}
+.slot{padding:.38rem .75rem;border-radius:4px;background:var(--fldb);border:1px solid rgba(255,99,32,.35);font-size:.72rem;color:var(--fl2);cursor:pointer;display:flex;align-items:center;gap:.3rem;animation:slotIn .2s ease}
+@keyframes slotIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.slot:hover{background:rgba(255,99,32,.25)}
+.chain-msg{padding:.65rem .9rem;border-radius:6px;font-size:.78rem;display:none;animation:fbIn .3s ease;margin-top:.6rem}
+.chain-msg.show{display:block}
+.chain-msg.ok{background:var(--gnd);border:1px solid rgba(32,192,90,.25);color:var(--gn)}
+.chain-msg.no{background:var(--rdd);border:1px solid rgba(255,48,96,.2);color:var(--rd)}
+
+/* Pricing simulator */
+.price-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:1rem}
+@media(max-width:640px){.price-grid{grid-template-columns:1fr}}
+.price-result{background:var(--bg);border-radius:8px;border:1px solid var(--b1);padding:1.25rem;text-align:center}
+.pr-main{font-family:var(--mono);font-size:2.4rem;font-weight:700;color:var(--gd);line-height:1}
+.pr-label{font-size:.68rem;color:var(--mu);margin-top:.3rem}
+.pr-breakdown{margin-top:1rem;display:flex;flex-direction:column;gap:.3rem}
+.pb{display:flex;justify-content:space-between;font-size:.72rem}
+.pb .k{color:var(--mu)}
+.pb .v{font-family:var(--mono);color:var(--tx)}
+.pb.total{border-top:1px solid var(--b1);padding-top:.4rem;margin-top:.2rem;font-weight:600}
+.pb.total .k{color:var(--gd)}
+.pb.total .v{color:var(--gd)}
+.pb.warn .v{color:var(--rd)}
+
+/* ── SCENARIO ── */
+.scenario{background:var(--surf);border:1px solid var(--b1);border-radius:10px;overflow:hidden;margin:2rem 0}
+.sc-head{padding:1.1rem 1.4rem;background:linear-gradient(135deg,rgba(255,99,32,.08),rgba(139,92,246,.06));border-bottom:1px solid var(--b1)}
+.sc-tag{font-size:.58rem;text-transform:uppercase;letter-spacing:.12em;color:var(--fl);margin-bottom:.35rem}
+.sc-title{font-weight:700;font-size:.95rem;line-height:1.4}
+.sc-body{padding:1.25rem 1.4rem}
+.sc-desc{font-size:.82rem;color:var(--mu);line-height:1.78;margin-bottom:1.25rem}
+.sc-choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.6rem}
+.sc-choice{border:1px solid var(--b1);border-radius:7px;padding:.9rem;cursor:pointer;transition:all .18s;background:var(--card);font-size:.8rem;line-height:1.5;text-align:left}
+.sc-choice:hover{border-color:var(--b2);transform:translateY(-1px)}
+.sc-choice.good{border-color:var(--gn);background:var(--gnd);cursor:default}
+.sc-choice.bad{border-color:var(--rd);background:var(--rdd);cursor:default}
+.sc-fb{display:none;margin-top:1rem;padding:1rem 1.1rem;border-radius:7px;font-size:.8rem;line-height:1.72;animation:fbIn .35s ease}
+.sc-fb.show{display:block}
+.sc-fb.good{background:var(--gnd);border:1px solid rgba(32,192,90,.2);color:var(--mu)}
+.sc-fb.bad{background:var(--rdd);border:1px solid rgba(255,48,96,.2);color:var(--mu)}
+.sc-fb strong{color:var(--tx)}
+
+/* ── LESSON FOOTER ── */
+.lesson-footer{display:flex;justify-content:space-between;align-items:center;margin-top:3rem;padding-top:1.25rem;border-top:1px solid var(--b1)}
+.lf-info{font-size:.7rem;color:var(--mu)}
+.btn-next-mod{padding:.65rem 1.6rem;background:var(--fl);color:white;font-family:var(--sans);font-weight:600;font-size:.82rem;border:none;border-radius:6px;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:.5rem}
+.btn-next-mod:hover{background:var(--fl2)}
+
+/* ── QUIZ PANEL ── */
+.quiz-wrap{max-width:680px;margin:0 auto;padding:2rem 1.5rem}
+.quiz-prog{background:var(--card);border:1px solid var(--b1);border-radius:10px;padding:1.1rem 1.4rem;margin-bottom:1.25rem}
+.qp-top{display:flex;justify-content:space-between;margin-bottom:.5rem}
+.qp-label{font-size:.68rem;color:var(--mu)}
+.qp-score{font-family:var(--mono);font-size:.68rem;color:var(--gd)}
+.qp-bar{height:5px;background:var(--b1);border-radius:3px;overflow:hidden}
+.qp-fill{height:100%;background:linear-gradient(90deg,var(--fl),var(--gd));border-radius:3px;transition:width .4s ease}
+.q-card{background:var(--card);border:1px solid var(--b1);border-radius:10px;padding:1.7rem;margin-bottom:1.1rem}
+.q-num{font-family:var(--mono);font-size:.62rem;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.7rem}
+.q-text{font-weight:600;font-size:.92rem;line-height:1.52;margin-bottom:1.35rem}
+.q-opts{display:flex;flex-direction:column;gap:.5rem}
+.qo{display:flex;align-items:flex-start;gap:.7rem;padding:.78rem 1rem;border:1px solid var(--b1);border-radius:6px;background:var(--surf);cursor:pointer;font-family:var(--sans);font-size:.82rem;color:var(--tx);text-align:left;transition:all .13s;width:100%}
+.qo:hover:not([disabled]){border-color:var(--b2);background:rgba(255,255,255,.012)}
+.qo[disabled]{cursor:default}
+.qol{font-family:var(--mono);font-size:.65rem;width:22px;height:22px;border-radius:4px;background:var(--dim);color:var(--mu);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .13s}
+.qo.qc{border-color:var(--gn);background:var(--gnd)}
+.qo.qc .qol{background:var(--gn);color:white}
+.qo.qw{border-color:var(--rd);background:var(--rdd)}
+.qo.qw .qol{background:var(--rd);color:white}
+.qo.qr{border-color:rgba(32,192,90,.35);opacity:.55}
+.q-exp{display:none;margin-top:.9rem;padding:.9rem 1rem;border-radius:6px;font-size:.79rem;line-height:1.7;animation:fbIn .28s ease}
+.q-exp.show{display:block}
+.q-exp.ok{background:var(--gnd);border:1px solid rgba(32,192,90,.2);color:var(--mu)}
+.q-exp.ok::before{content:'✅ Correct — ';font-weight:700;color:var(--gn)}
+.q-exp.no{background:var(--rdd);border:1px solid rgba(255,48,96,.18);color:var(--mu)}
+.q-exp.no::before{content:'💡 Not quite — ';font-weight:700;color:var(--rd)}
+.q-nav{display:flex;gap:.65rem;align-items:center}
+.btn-qnext{padding:.58rem 1.4rem;background:var(--fl);color:white;font-family:var(--sans);font-weight:600;font-size:.8rem;border:none;border-radius:5px;cursor:pointer;transition:all .18s}
+.btn-qnext:hover{background:var(--fl2)}
+.btn-qnext:disabled{opacity:.3;cursor:not-allowed}
+.btn-skip{padding:.58rem 1rem;background:transparent;color:var(--mu);font-family:var(--sans);font-size:.78rem;border:1px solid var(--b1);border-radius:5px;cursor:pointer;transition:all .15s}
+.btn-skip:hover{border-color:var(--mu)}
+
+/* Results */
+.results{background:var(--card);border:1px solid var(--b1);border-radius:12px;padding:2.5rem;text-align:center;max-width:520px;margin:2rem auto}
+.res-emoji{font-size:3rem;margin-bottom:.9rem}
+.res-score{font-family:var(--mono);font-size:3.2rem;font-weight:700;color:var(--gd)}
+.res-label{font-size:.82rem;color:var(--mu);margin-bottom:2rem}
+.res-stats{display:flex;justify-content:center;gap:2rem;margin-bottom:1.75rem}
+.rs{text-align:center}
+.rs-v{font-weight:700;font-size:1.2rem}
+.rs-l{font-size:.62rem;color:var(--mu);text-transform:uppercase;letter-spacing:.08em}
+.res-btns{display:flex;gap:.65rem;justify-content:center;flex-wrap:wrap}
+
+/* ── AI TUTOR DRAWER ── */
+#ai-drawer{
+  position:fixed;right:0;top:0;bottom:0;width:380px;
+  background:var(--surf);border-left:1px solid var(--b1);
+  display:flex;flex-direction:column;z-index:500;
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.25,.8,.25,1);
+}
+#ai-drawer.open{transform:translateX(0)}
+.ai-head{padding:1rem 1.1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem}
+.ai-avatar{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--ic),var(--vi));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.ai-head-text{flex:1}
+.ai-head-name{font-weight:700;font-size:.87rem}
+.ai-head-sub{font-size:.62rem;color:var(--mu)}
+.ai-close{background:none;border:none;color:var(--mu);font-size:1.2rem;cursor:pointer;padding:.25rem;border-radius:4px}
+.ai-close:hover{background:var(--dim);color:var(--tx)}
+.ai-ctx{padding:.65rem 1rem;background:var(--icd);border-bottom:1px solid rgba(0,212,240,.15);font-size:.68rem;color:var(--ic);display:flex;align-items:center;gap:.4rem}
+.ai-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem;scrollbar-width:thin;scrollbar-color:var(--dim) transparent}
+.ai-msg{max-width:88%;font-size:.8rem;line-height:1.65;padding:.7rem .9rem;border-radius:10px;animation:fbIn .22s ease}
+.ai-msg.bot{background:var(--card);border:1px solid var(--b1);align-self:flex-start;border-radius:4px 10px 10px 10px;color:var(--mu)}
+.ai-msg.bot strong{color:var(--tx)}
+.ai-msg.user{background:var(--fldb);border:1px solid rgba(255,99,32,.25);align-self:flex-end;border-radius:10px 4px 10px 10px;color:var(--tx)}
+.ai-msg.typing .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mu);margin:0 2px;animation:dot 1.4s ease infinite}
+.ai-msg.typing .dot:nth-child(2){animation-delay:.2s}
+.ai-msg.typing .dot:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.ai-suggestions{padding:.6rem 1rem;display:flex;flex-wrap:wrap;gap:.4rem;border-top:1px solid var(--b1)}
+.ai-sug{font-size:.68rem;padding:.3rem .65rem;background:var(--card);border:1px solid var(--b1);border-radius:20px;cursor:pointer;color:var(--mu);transition:all .13s}
+.ai-sug:hover{border-color:var(--ic);color:var(--ic)}
+.ai-input-row{padding:.75rem 1rem;border-top:1px solid var(--b1);display:flex;gap:.5rem}
+.ai-input{flex:1;background:var(--card);border:1px solid var(--b1);border-radius:6px;padding:.55rem .8rem;color:var(--tx);font-family:var(--sans);font-size:.8rem;outline:none;resize:none;min-height:38px;max-height:120px}
+.ai-input:focus{border-color:var(--ic)}
+.ai-input::placeholder{color:var(--mu)}
+.ai-send{padding:.55rem .9rem;background:var(--ic);color:var(--bg);border:none;border-radius:6px;cursor:pointer;font-size:.9rem;transition:all .15s;flex-shrink:0}
+.ai-send:hover{background:var(--ic2)}
+.ai-send:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── GLOSSARY ── */
+.gloss-wrap{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+.gloss-search{background:var(--card);border:1px solid var(--b1);border-radius:7px;padding:.6rem .9rem;display:flex;align-items:center;gap:.65rem;margin-bottom:1rem}
+.gloss-search input{background:none;border:none;outline:none;color:var(--tx);font-family:var(--sans);font-size:.85rem;flex:1}
+.gloss-search input::placeholder{color:var(--mu)}
+.gloss-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1px;background:var(--b1);border:1px solid var(--b1);border-radius:8px;overflow:hidden}
+.gi{background:var(--card);padding:1rem 1.1rem;transition:background .12s;cursor:default}
+.gi:hover{background:var(--card2)}
+.gi-term{font-family:var(--mono);font-size:.78rem;color:var(--ic);margin-bottom:.3rem;font-weight:500}
+.gi-def{font-size:.76rem;color:var(--mu);line-height:1.6}
+.gi.hidden{display:none}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--card);border:1px solid var(--b1);border-radius:9px;padding:.8rem 1.1rem;display:flex;align-items:center;gap:.7rem;z-index:9999;transform:translateY(80px);opacity:0;transition:all .32s cubic-bezier(.175,.885,.32,1.275);pointer-events:none;max-width:280px}
+#toast.show{transform:translateY(0);opacity:1}
+.toast-icon{font-size:1.15rem}
+.toast-text{font-size:.78rem;line-height:1.4}
+.toast-text strong{color:var(--gd)}
+
+/* ── MISC ── */
+.divider{height:1px;background:var(--b1);margin:1.5rem 0}
+.tag{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;padding:.15rem .55rem;border-radius:3px;font-weight:600}
+.tag.sim{background:var(--icd);color:var(--ic)}
+.tag.check{background:var(--gdd);color:var(--gd)}
+.tag.scenario{background:var(--vid);color:var(--vi)}
+.tag.ai{background:var(--icd);color:var(--ic2)}
+.formula{font-family:var(--mono);font-size:.88rem;background:var(--bg);border:1px solid var(--b1);border-left:3px solid var(--gd);padding:1.1rem 1.35rem;border-radius:0 6px 6px 0;color:var(--gd);margin:1rem 0}
+.formula .fl{font-size:.6rem;color:var(--mu);display:block;margin-bottom:.35rem}
+.btn-sm{padding:.38rem .9rem;font-family:var(--sans);font-size:.72rem;font-weight:600;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid}
+.btn-sm.primary{background:var(--fl);color:white;border-color:var(--fl)}
+.btn-sm.primary:hover{background:var(--fl2)}
+.btn-sm.outline{background:transparent;color:var(--mu);border-color:var(--b1)}
+.btn-sm.outline:hover{border-color:var(--mu);color:var(--tx)}
+</style>
+</head>
+<body>
+<div id="wrap">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside id="sidebar">
+  <div class="sb-head">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">⛽</div>
+      <div><div class="sb-logo-text">LNG <em>Academy</em></div><div class="sb-tagline">Natural Gas & LNG Training</div></div>
+    </div>
+  </div>
+
+  <div class="sb-prog">
+    <div class="sp-top"><span class="sp-label">Course Progress</span><span class="sp-pct" id="spPct">0%</span></div>
+    <div class="sp-bar"><div class="sp-fill" id="spFill"></div></div>
+    <div class="sp-stats">
+      <div class="sp-stat">⭐ <strong id="xpVal">0</strong> XP</div>
+      <div class="sp-stat">🔥 <strong id="strkVal">0</strong> streak</div>
+      <div class="sp-stat">✅ <strong id="modVal">0</strong>/8 done</div>
+    </div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-sec">Overview</div>
+    <div class="sn active" data-panel="home"><span class="sn-ico">🏠</span><span class="sn-txt">Dashboard</span></div>
+
+    <div class="sb-sec">Learning Modules</div>
+    <div class="sn" id="sn-m1" data-panel="m1"><span class="sn-ico">🌍</span><span class="sn-txt">1 · What is Natural Gas?</span><span class="sn-badge">Start</span></div>
+    <div class="sn" id="sn-m2" data-panel="m2"><span class="sn-ico">❄️</span><span class="sn-txt">2 · Liquefaction Science</span><span class="sn-badge">Start</span></div>
+    <div class="sn" id="sn-m3" data-panel="m3"><span class="sn-ico">🔗</span><span class="sn-txt">3 · The LNG Value Chain</span><span class="sn-badge">Start</span></div>
+    <div class="sn" id="sn-m4" data-panel="m4"><span class="sn-ico">🚢</span><span class="sn-txt">4 · Shipping & Carriers</span><span class="sn-badge">Start</span></div>
+    <div class="sn" id="sn-m5" data-panel="m5"><span class="sn-ico">💰</span><span class="sn-txt">5 · Pricing & Contracts</span><span class="sn-badge">Start</span></div>
+    <div class="sn" id="sn-m6" data-panel="m6"><span class="sn-ico">⚖️</span><span class="sn-txt">6 · Project Structures</span><span class="sn-badge">Start</span></div>
+    <div class="sn" id="sn-m7" data-panel="m7"><span class="sn-ico">🏛️</span><span class="sn-txt">7 · Government & Policy</span><span class="sn-badge">Start</span></div>
+    <div class="sn" id="sn-m8" data-panel="m8"><span class="sn-ico">🌍</span><span class="sn-txt">8 · African Gas Markets</span><span class="sn-badge">Start</span></div>
+
+    <div class="sb-sec">Assessment</div>
+    <div class="sn" id="sn-quiz" data-panel="quiz"><span class="sn-ico">📝</span><span class="sn-txt">Final Assessment</span><span class="sn-badge">20 Qs</span></div>
+    <div class="sn" data-panel="glossary"><span class="sn-ico">📖</span><span class="sn-txt">Glossary</span></div>
+  </nav>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div id="main">
+  <div id="topbar">
+    <div class="tb-title" id="tbTitle">LNG Academy — Dashboard</div>
+    <div class="tb-streak">🔥 <span id="tbStreak">0</span></div>
+    <div class="tb-xp">⭐ <span id="tbXP">0</span> XP</div>
+    <button class="tb-ai-btn" onclick="toggleAI()">🤖 Ask AI Tutor</button>
+  </div>
+
+  <div id="content">
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<div class="panel active" id="panel-home">
+  <div class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-inner">
+      <div class="hero-pill"><span class="pulse"></span>Interactive · Simulation-Based · Professional Training</div>
+      <h1>Learn <em>Natural Gas & LNG</em><br>through Simulation</h1>
+      <p>Eight structured modules with live physics simulations, AI-powered tutoring, scenario-based decision challenges, and a 20-question assessment. Built for professionals with 3 to 30 years of industry experience.</p>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-v">8</div><div class="hstat-l">Modules</div></div>
+        <div class="hstat"><div class="hstat-v">6</div><div class="hstat-l">Simulations</div></div>
+        <div class="hstat"><div class="hstat-v">AI</div><div class="hstat-l">Tutor</div></div>
+        <div class="hstat"><div class="hstat-v">20</div><div class="hstat-l">Questions</div></div>
+      </div>
+      <div class="hero-btns">
+        <button class="btn-hero primary" onclick="go('m1')">▶ Start Learning</button>
+        <button class="btn-hero ghost" onclick="go('quiz')">Take Assessment</button>
+        <button class="btn-hero ghost" onclick="toggleAI()">🤖 Chat with AI Tutor</button>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 1.5rem 1.5rem"><div style="font-size:.72rem;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;font-weight:600;padding-top:1.5rem">All Modules</div></div>
+  <div class="module-grid" style="padding-top:0">
+    <div class="mcard" onclick="go('m1')"><div class="mcard-num">MODULE 01</div><div class="mcard-icon">🌍</div><div class="mcard-title">What is Natural Gas?</div><div class="mcard-desc">Composition, origins, associated vs non-associated gas, and domestic uses.</div><div class="mcard-footer"><div class="mcard-tags"><span class="mtag">Foundational</span><span class="mtag">Simulation</span></div><div class="mcard-time">~15 min</div></div></div>
+    <div class="mcard" onclick="go('m2')"><div class="mcard-num">MODULE 02</div><div class="mcard-icon">❄️</div><div class="mcard-title">Liquefaction Science</div><div class="mcard-desc">The physics of cooling gas to −162°C, train architecture, and process technologies.</div><div class="mcard-footer"><div class="mcard-tags"><span class="mtag">Technical</span><span class="mtag">Lab Sim</span></div><div class="mcard-time">~20 min</div></div></div>
+    <div class="mcard" onclick="go('m3')"><div class="mcard-num">MODULE 03</div><div class="mcard-icon">🔗</div><div class="mcard-title">The LNG Value Chain</div><div class="mcard-desc">Eight interconnected links from exploration to end market — build the chain yourself.</div><div class="mcard-footer"><div class="mcard-tags"><span class="mtag">Chain Builder</span><span class="mtag">Pipeline Sim</span></div><div class="mcard-time">~20 min</div></div></div>
+    <div class="mcard" onclick="go('m4')"><div class="mcard-num">MODULE 04</div><div class="mcard-icon">🚢</div><div class="mcard-title">Shipping & Carriers</div><div class="mcard-desc">LNG carrier classes, FSRU technology, containment systems, and charter economics.</div><div class="mcard-footer"><div class="mcard-tags"><span class="mtag">Carrier Sim</span><span class="mtag">FSRU</span></div><div class="mcard-time">~15 min</div></div></div>
+    <div class="mcard" onclick="go('m5')"><div class="mcard-num">MODULE 05</div><div class="mcard-icon">💰</div><div class="mcard-title">Pricing & Contracts</div><div class="mcard-desc">Oil-indexed formula, netback calculations, take-or-pay structure, and the spot market.</div><div class="mcard-footer"><div class="mcard-tags"><span class="mtag">Live Calculator</span><span class="mtag">Commercial</span></div><div class="mcard-time">~20 min</div></div></div>
+    <div class="mcard" onclick="go('m6')"><div class="mcard-num">MODULE 06</div><div class="mcard-icon">⚖️</div><div class="mcard-title">Project Structures</div><div class="mcard-desc">Integrated, Merchant, and Tolling models — risk allocation and financing implications.</div><div class="mcard-footer"><div class="mcard-tags"><span class="mtag">Decision Scenario</span><span class="mtag">Commercial</span></div><div class="mcard-time">~18 min</div></div></div>
+    <div class="mcard" onclick="go('m7')"><div class="mcard-num">MODULE 07</div><div class="mcard-icon">🏛️</div><div class="mcard-title">Government & Policy</div><div class="mcard-desc">DSO, Gas Master Plans, fiscal regimes, regulators, and capacity building.</div><div class="mcard-footer"><div class="mcard-tags"><span class="mtag">Policy</span><span class="mtag">Scenario</span></div><div class="mcard-time">~18 min</div></div></div>
+    <div class="mcard" onclick="go('m8')"><div class="mcard-num">MODULE 08</div><div class="mcard-icon">🌍</div><div class="mcard-title">African Gas Markets</div><div class="mcard-desc">Supply/demand dynamics, WAGP, FSRU deployments, and the gas-to-power opportunity.</div><div class="mcard-footer"><div class="mcard-tags"><span class="mtag">Market Sim</span><span class="mtag">Strategic</span></div><div class="mcard-time">~20 min</div></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ MODULE 1 ═══════════════ -->
+<div class="panel" id="panel-m1">
+<div class="lesson">
+  <div class="lesson-nav"><span onclick="go('home')">Dashboard</span><span class="sep">›</span><span>Module 1</span></div>
+  <div class="lesson-h1">🌍 What is Natural Gas?</div>
+  <div class="lesson-meta"><div class="lm">⏱ ~15 min</div><div class="lm">⭐ 150 XP</div><div class="lm">📊 Foundational</div></div>
+
+  <div class="obj-box">
+    <div class="obj-hd">🎯 By the end of this module you will be able to:</div>
+    <ul class="obj-list">
+      <li>Identify the chemical composition of raw natural gas and explain why each component matters</li>
+      <li>Distinguish between associated and non-associated gas — and the policy implications of each</li>
+      <li>Rank domestic uses of gas by economic priority and explain the reasoning</li>
+      <li>Explain what "gas flaring" is and why it remains a problem in Africa</li>
+    </ul>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>What Comes Out of the Ground</h3>
+    <p>When natural gas is first extracted, it is rarely the clean product that reaches homes and industries. Raw gas is a complex mixture dominated by <strong>methane (CH₄)</strong> — typically 70–90% by volume — but it always arrives at the surface with unwanted companions.</p>
+    <p>These include heavier hydrocarbons such as ethane, propane, and butane — collectively called <strong>Natural Gas Liquids (NGLs)</strong>. It also contains acid gases like <strong>carbon dioxide (CO₂)</strong> and <strong>hydrogen sulphide (H₂S)</strong>, water vapour, and trace amounts of mercury. Each of these must be removed before the gas can be sold or exported.</p>
+    <div class="info">
+      <strong>Why does mercury matter?</strong> Even parts-per-billion concentrations of mercury will corrode the aluminium heat exchangers inside a liquefaction plant — causing catastrophic equipment failure. Mercury removal is therefore a mandatory first step in any gas processing facility destined to produce LNG.
+    </div>
+    <p>The NGLs — propane, butane, ethane — are not waste products. Separated and stabilised, they become <strong>LPG for cooking</strong>, <strong>ethane feedstock for petrochemicals</strong>, or <strong>condensate for blending with crude oil</strong>. A well-designed processing plant captures these byproducts and converts them into additional revenue streams.</p>
+  </div>
+
+  <!-- SIMULATION 1: GAS COMPOSITION -->
+  <div class="sim">
+    <div class="sim-head">
+      <span class="tag sim">🔬 Interactive Lab</span>
+      <span class="sim-title">Raw Gas Composition Explorer</span>
+      <span class="sim-hint">Adjust sliders · watch processing stages</span>
+    </div>
+    <div class="sim-body">
+      <canvas id="c-comp" width="780" height="200" style="width:100%;height:auto"></canvas>
+      <div class="sim-row">
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Methane content (%)</div>
+          <input type="range" class="ice" id="sl-ch4" min="50" max="98" value="82" oninput="drawComp()">
+          <div class="ctrl-val" id="v-ch4">82%</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">H₂S sour content (%)</div>
+          <input type="range" class="gold" id="sl-h2s" min="0" max="15" value="3" oninput="drawComp()">
+          <div class="ctrl-val" id="v-h2s">3%</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">CO₂ content (%)</div>
+          <input type="range" id="sl-co2" min="0" max="20" value="5" oninput="drawComp()">
+          <div class="ctrl-val" id="v-co2">5%</div>
+        </div>
+      </div>
+      <div class="sim-metrics">
+        <div class="sim-metric"><div class="sm-val" id="sm-ngl" style="color:var(--fl)">10%</div><div class="sm-lbl">NGL Value</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-quality" style="color:var(--gn)">Good</div><div class="sm-lbl">Feed Quality</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-sour" style="color:var(--gd)">Mild</div><div class="sm-lbl">Sour Classification</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-treat" style="color:var(--ic)">3 Stages</div><div class="sm-lbl">Treatment Steps</div></div>
+      </div>
+      <div class="sim-info" id="si-comp">Adjust the sliders to see how raw gas composition affects processing complexity and economic value.</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>Two Types of Gas Reservoir</h3>
+    <p><strong>Associated gas</strong> is produced in the same reservoir as crude oil — it emerges alongside the oil whether the operator wants it or not. Historically, when no pipeline or processing infrastructure existed, this gas was simply <strong>flared</strong> (burned off at the wellhead). Nigeria's Niger Delta became one of the world's worst flaring sites, wasting billions of dollars in energy value and releasing massive amounts of CO₂.</p>
+    <p><strong>Non-associated gas</strong> comes from reservoirs where gas is the primary product — no oil in significant quantities. The giant offshore fields of Mozambique, Tanzania, and Qatar are predominantly non-associated gas. The operator drills specifically to produce gas, and the economics must justify the investment purely on gas revenues.</p>
+    <div class="highlight">
+      <strong>Policy implication:</strong> For African governments with significant associated gas volumes — particularly Nigeria and Angola — developing gas gathering and processing infrastructure converts a flaring liability into an economic asset. This is often the lowest-cost path to building a domestic gas supply base.
+    </div>
+  </div>
+
+  <div class="kc" id="kc1-1">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 1 of 3</span></div>
+    <div class="kc-q">A gas processing engineer discovers that incoming feed gas contains 8 parts per billion (ppb) of mercury. Why is this considered a critical problem requiring immediate action?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc1-1',this,false,'Mercury below 10 ppb is well within LNG export regulations — so the toxicity argument alone would not make it urgent for equipment.')">
+        <span class="kopt-l">A</span>Mercury at any concentration violates gas export regulations globally
+      </button>
+      <button class="kopt" onclick="KC('kc1-1',this,true,'Correct. Even trace mercury attacks the aluminium heat exchangers (cold boxes) inside the liquefaction plant, causing metal embrittlement and catastrophic failure. Plants have been shut down for weeks by undetected mercury ingress. Mercury removal beds using activated carbon or sulphur-impregnated adsorbents are therefore a mandatory upstream processing step.')">
+        <span class="kopt-l">B</span>Mercury corrodes the aluminium heat exchangers in the liquefaction plant, risking catastrophic failure
+      </button>
+      <button class="kopt" onclick="KC('kc1-1',this,false,'Mercury does not significantly affect the hydrocarbon dew point or the liquefaction temperature of methane.')">
+        <span class="kopt-l">C</span>Mercury raises the freezing point of methane and prevents full liquefaction
+      </button>
+      <button class="kopt" onclick="KC('kc1-1',this,false,'Pipeline steel is not the primary concern — the downstream cryogenic aluminium equipment is the vulnerable point.')">
+        <span class="kopt-l">D</span>Mercury causes rapid corrosion of the gas transmission pipeline steel
+      </button>
+    </div>
+    <div class="kc-fb" id="kc1-1-fb"></div>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>What Gas Is Used For Domestically</h3>
+    <p>Once processed, natural gas serves multiple sectors of an economy. The sequence of priorities typically follows the available infrastructure and credit quality of the buyer:</p>
+    <p><strong>Power generation</strong> is almost always the first priority — electricity is the enabling infrastructure for all other economic activity. Gas-fired power plants can be permitted and constructed in 3–4 years, gas turbines are a proven technology, and the utility company typically has sufficient credit to backstop project financing through a Power Purchase Agreement (PPA).</p>
+    <p>Beyond power, gas serves as feedstock for <strong>fertiliser plants</strong> (converting methane to ammonia and urea), <strong>methanol plants</strong>, and <strong>petrochemical facilities</strong>. These industries require large, steady gas volumes and offer the opportunity to create manufacturing employment rather than simply exporting raw molecules.</p>
+  </div>
+
+  <div class="kc" id="kc1-2">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 2 of 3</span></div>
+    <div class="kc-q">What is "associated gas" and what has been the traditional economic cause of gas flaring in many African oil-producing nations?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc1-2',this,false,'Associated gas is not an LNG processing byproduct — it describes gas that co-exists with crude oil in a reservoir.')">
+        <span class="kopt-l">A</span>Gas produced as a byproduct of LNG regasification — flared because it cannot re-enter pipelines
+      </button>
+      <button class="kopt" onclick="KC('kc1-2',this,true,'Exactly right. Associated gas co-exists with crude oil in a single reservoir. Historically, oil producers drilled for the oil — the gas was an unwanted byproduct. Without pipeline infrastructure or a nearby market, the gas was flared. The economics of oil production could absorb this cost while gas infrastructure would have required separate investment that was not justified by gas revenues alone.')">
+        <span class="kopt-l">B</span>Gas that co-exists with crude oil in a reservoir — flared historically when no gas market or infrastructure existed
+      </button>
+      <button class="kopt" onclick="KC('kc1-2',this,false,'Non-associated gas comes from reservoirs where gas is the primary product with no significant oil. Flaring of non-associated gas would be a commercial disaster, not a historical norm.')">
+        <span class="kopt-l">C</span>Gas from dedicated gas-only reservoirs — flared during exploration because reserves are uncertain
+      </button>
+      <button class="kopt" onclick="KC('kc1-2',this,false,'Gas that has failed H₂S treatment is called sour gas — it is not called associated gas and is neutralised by treatment, not flared routinely.')">
+        <span class="kopt-l">D</span>Gas that fails H₂S processing and must be burned to prevent air pollution
+      </button>
+    </div>
+    <div class="kc-fb" id="kc1-2-fb"></div>
+  </div>
+
+  <!-- SCENARIO -->
+  <div class="scenario">
+    <div class="sc-head">
+      <div class="sc-tag">🎯 Decision Scenario — Bloom's Level: Evaluate</div>
+      <div class="sc-title">You are the Energy Minister. A newly discovered gas field produces 8 BCF/day. 70% of the population lacks reliable electricity. Choose your first domestic gas priority.</div>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">The IOC consortium is ready to build. You have one chance to anchor the first gas allocation. What do you prioritise?</div>
+      <div class="sc-choices" id="sc1-choices">
+        <div class="sc-choice" onclick="SC('sc1','power')"><strong>A. Gas-to-Power</strong><br><span style="font-size:.74rem;color:var(--mu)">Build power plants to electrify homes and industry — use the utility as anchor buyer</span></div>
+        <div class="sc-choice" onclick="SC('sc1','petrochem')"><strong>B. Petrochemicals</strong><br><span style="font-size:.74rem;color:var(--mu)">Attract foreign investment in high-value chemicals manufacturing using gas feedstock</span></div>
+        <div class="sc-choice" onclick="SC('sc1','export')"><strong>C. LNG Export Only</strong><br><span style="font-size:.74rem;color:var(--mu)">Export all available gas as LNG to maximise immediate foreign exchange earnings</span></div>
+        <div class="sc-choice" onclick="SC('sc1','fertiliser')"><strong>D. Fertiliser Plant</strong><br><span style="font-size:.74rem;color:var(--mu)">Anchor gas to an ammonia/urea plant — agriculture export revenue and job creation</span></div>
+      </div>
+      <div class="sc-fb good" id="sc1-power">✅ <strong>Best choice for this context.</strong> With 70% of the population without power, gas-to-power solves an immediate economic bottleneck. Power enables all other industries to grow. The utility company is usually the most creditworthy domestic buyer, providing the bankable offtake agreement that underpins gas field financing. Most Gas Master Plans correctly rank power generation as the primary domestic gas priority.</div>
+      <div class="sc-fb bad" id="sc1-petrochem">⚠️ <strong>Valid second-stage priority, but premature here.</strong> Petrochemical complexes require reliable electricity (which 70% of the population lacks), specialised logistics, and export markets. Without a functioning grid, attracting and sustaining industrial investment is extremely difficult. This becomes a strong option after the power deficit is addressed.</div>
+      <div class="sc-fb bad" id="sc1-export">⚠️ <strong>Maximises short-term revenue but creates long-term political risk.</strong> Exporting all gas while the majority of citizens lack power is politically untenable and undermines the social licence to operate. Most gas-producing nations implement a Domestic Supply Obligation (DSO) precisely to prevent this outcome. Revenue without development creates resource-curse dynamics.</div>
+      <div class="sc-fb bad" id="sc1-fertiliser">⚠️ <strong>Good second priority, but fertiliser before power is sequencing backwards.</strong> Fertiliser plants require reliable power for their own operations, and rural distribution of fertiliser requires road and logistics infrastructure energised by electricity. Correct sequencing: power first, then industrial anchors like fertiliser.</div>
+    </div>
+  </div>
+
+  <div class="kc" id="kc1-3">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 3 of 3</span></div>
+    <div class="kc-q">A petrochemical investor wants to build an ethylene cracker using natural gas as feedstock. Which component of the raw gas stream is actually the cracker's primary feedstock?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc1-3',this,false,'Methane can be used as petrochemical feedstock (via methanol-to-olefins routes) but is not the primary feedstock for a conventional steam cracker.')">
+        <span class="kopt-l">A</span>Methane (CH₄) — the dominant component
+      </button>
+      <button class="kopt" onclick="KC('kc1-3',this,true,'Correct. Ethane (C₂H₆) is the preferred feedstock for steam crackers because it produces ethylene with high yields and relatively simple chemistry. Ethane is separated from the raw gas stream at the gas processing plant as part of NGL extraction. This is why NGL recovery is commercially important — ethane has significant standalone value when a petrochemical market exists.')">
+        <span class="kopt-l">B</span>Ethane (C₂H₆) — separated at the processing plant as part of NGL recovery
+      </button>
+      <button class="kopt" onclick="KC('kc1-3',this,false,'CO₂ is an impurity that must be removed before processing — it has no value as a cracker feedstock.')">
+        <span class="kopt-l">C</span>Carbon dioxide (CO₂) — used as the carbon source for ethylene synthesis
+      </button>
+      <button class="kopt" onclick="KC('kc1-3',this,false,'H₂S is removed and converted to sulphur for industrial sale — it is not used as a cracker feedstock.')">
+        <span class="kopt-l">D</span>Hydrogen sulphide (H₂S) — the hydrogen component feeds the cracking reaction
+      </button>
+    </div>
+    <div class="kc-fb" id="kc1-3-fb"></div>
+  </div>
+
+  <div class="lesson-footer">
+    <div class="lf-info">Module 1 · 150 XP awarded on completion</div>
+    <button class="btn-next-mod" onclick="completeMod('m1','m2')">Continue → Liquefaction Science</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ MODULE 2 ═══════════════ -->
+<div class="panel" id="panel-m2">
+<div class="lesson">
+  <div class="lesson-nav"><span onclick="go('home')">Dashboard</span><span class="sep">›</span><span>Module 2</span></div>
+  <div class="lesson-h1">❄️ The Science of Liquefaction</div>
+  <div class="lesson-meta"><div class="lm">⏱ ~20 min</div><div class="lm">⭐ 200 XP</div><div class="lm">📊 Technical</div></div>
+
+  <div class="obj-box">
+    <div class="obj-hd">🎯 Learning Objectives</div>
+    <ul class="obj-list">
+      <li>Explain why −162°C is the target temperature for methane liquefaction and what 1/600 volume ratio means practically</li>
+      <li>Describe the C3MR, Cascade, and DMR liquefaction processes and their key differences</li>
+      <li>Define what a "train" is and why multi-train design matters operationally</li>
+      <li>Compare onshore LNG plants with FLNG floating solutions</li>
+    </ul>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>Why −162°C?</h3>
+    <p>Methane has a boiling point of <strong>−161.5°C at atmospheric pressure</strong>. Cool it below this temperature and it transitions from gas to liquid — a process driven by removing enough thermal energy that intermolecular van der Waals forces overcome molecular kinetic energy, pulling the molecules into a liquid state.</p>
+    <p>The practical result is extraordinary: LNG occupies just <strong>1/600th the volume</strong> of the same mass of natural gas. A single large LNG carrier can hold the equivalent of approximately 6 billion cubic feet of gas — enough to meet the UK's total daily gas demand. Without this compression, maritime gas transport at scale would be physically impossible.</p>
+    <div class="highlight">
+      <strong>The engineering challenge:</strong> Maintaining a liquid at −162°C requires double-hulled insulated storage tanks made from 9% nickel steel (which retains ductility at cryogenic temperatures) and continuous management of "boil-off gas" (BOG) — the small fraction of LNG that naturally evaporates. Modern carriers use BOG as fuel for their propulsion systems.
+    </div>
+  </div>
+
+  <!-- SIMULATION 2: LIQUEFACTION LAB -->
+  <div class="sim">
+    <div class="sim-head">
+      <span class="tag sim">🔬 Physics Simulation</span>
+      <span class="sim-title">Methane Liquefaction Temperature Lab</span>
+      <span class="sim-hint">Drag slider to cool gas · watch molecules behave</span>
+    </div>
+    <div class="sim-body">
+      <canvas id="c-mol" width="780" height="220" style="width:100%;height:auto;border-radius:8px;border:1px solid var(--b1)"></canvas>
+      <div class="sim-row">
+        <div class="sim-ctrl" style="flex:2">
+          <div class="ctrl-lbl">Temperature (°C) — drag left to cool</div>
+          <input type="range" class="ice" id="sl-temp" min="-200" max="25" value="20" oninput="updateMol()">
+          <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--mu);margin-top:2px"><span>−200°C</span><span>+25°C</span></div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Current Temperature</div>
+          <div class="ctrl-val" id="v-temp" style="font-size:1.5rem;color:var(--ic)">+20°C</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Volume vs Gas Phase</div>
+          <div class="ctrl-val" id="v-vol">1 / 1</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Phase State</div>
+          <div class="ctrl-val" id="v-phase" style="color:var(--fl)">GAS</div>
+        </div>
+      </div>
+      <div class="sim-info" id="si-mol">At room temperature, methane molecules are energetic and widely spaced. Drag the slider left to begin cooling — watch the molecules slow and eventually condense.</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>Liquefaction Process Technologies</h3>
+    <p>Three main refrigeration technology families dominate global LNG production. The choice affects capital cost, energy efficiency, physical footprint, and suitability for offshore deployment.</p>
+    <p><strong>APCI C3MR</strong> (Air Products Propane Pre-cooled Mixed Refrigerant) is the most widely deployed technology globally — used in Qatar, Australia, Nigeria, Malaysia, and dozens of other projects. It pre-cools the gas using a propane refrigerant loop, then completes liquefaction using a mixed refrigerant of methane, ethane, propane, and nitrogen. The propane stage is highly efficient but creates a safety consideration — propane is heavier than air and accumulates in low-lying areas if leaked, creating explosion risk.</p>
+    <p><strong>ConocoPhillips Cascade</strong> uses three separate pure refrigerant loops in sequence: propane cools to approximately −35°C, ethylene takes it to −90°C, and methane completes the liquefaction to −155°C. Each loop is simpler to control than a mixed refrigerant system. The process powers the US export facilities at Sabine Pass and Freeport LNG.</p>
+    <p><strong>Shell DMR</strong> (Dual Mixed Refrigerant) uses two separate mixed refrigerant circuits — ideal for the rolling motion environment of a floating LNG (FLNG) vessel where propane storage creates additional risk. Shell's Prelude FLNG uses this approach.</p>
+  </div>
+
+  <div class="kc" id="kc2-1">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 1 of 2</span></div>
+    <div class="kc-q">An offshore West African gas field is too deep and remote for a subsea pipeline to the shore. The government wants first LNG within 4 years and wants to avoid onshore land acquisition. Which technology solution is most appropriate?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc2-1',this,false,'APCI C3MR is a proven onshore technology but requires stable ground-mounted infrastructure and significant land footprint. It does not address the offshore pipeline problem.')">
+        <span class="kopt-l">A</span>APCI C3MR onshore plant — most proven technology, build it onshore
+      </button>
+      <button class="kopt" onclick="KC('kc2-1',this,true,'Correct. FLNG (Floating LNG) is purpose-built for this scenario. The vessel is moored over the offshore field, processes feed gas onboard, liquefies it, stores LNG in onboard tanks, and offloads to shuttle carriers. Shell\'s Prelude FLNG off Australia and the Hilli Episeyo FLNG off Cameroon are operational examples. Eliminates the subsea pipeline and onshore land issues entirely.')">
+        <span class="kopt-l">B</span>FLNG — a floating vessel moored over the field that liquefies and stores LNG offshore
+      </button>
+      <button class="kopt" onclick="KC('kc2-1',this,false,'An FSRU is an import terminal (receiving and regasifying LNG). You need an export/liquefaction solution — the opposite direction.')">
+        <span class="kopt-l">C</span>FSRU — deploy a floating storage and regasification unit at the field
+      </button>
+      <button class="kopt" onclick="KC('kc2-1',this,false,'Cascade is also an onshore technology and has the same land-based infrastructure requirements as C3MR. It does not solve the offshore distance challenge.')">
+        <span class="kopt-l">D</span>ConocoPhillips Cascade onshore — simpler refrigerant control, faster to build
+      </button>
+    </div>
+    <div class="kc-fb" id="kc2-1-fb"></div>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>Train Architecture and Why It Matters</h3>
+    <p>An LNG plant is not built as a single monolithic unit. It is constructed as a series of <strong>parallel processing lines called "trains."</strong> Each train is an independent, complete liquefaction unit capable of operating on its own.</p>
+    <p>A typical world-scale plant has 2 to 7 trains, each producing 3.5 to 7.8 MTPA of LNG. The benefits of multi-train design are significant: if one train trips offline for maintenance or a safety event, the others continue producing. Expansion means adding a new train, not rebuilding the existing plant. Financing can be staged across train commissioning dates.</p>
+    <p>Qatar's Ras Laffan complex — the world's largest LNG production hub — has fourteen trains across the Qatargas and RasGas projects, producing approximately 77 MTPA total.</p>
+  </div>
+
+  <div class="kc" id="kc2-2">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 2 of 2</span></div>
+    <div class="kc-q">A plant manager reports that "Train 3 is down for a scheduled hot gas path inspection." What does this mean operationally for the LNG plant?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc2-2',this,false,'A single train shutdown does not require shutting down the entire plant — that is the key advantage of multi-train architecture.')">
+        <span class="kopt-l">A</span>The entire plant must stop — all trains share the same compression system
+      </button>
+      <button class="kopt" onclick="KC('kc2-2',this,true,'Correct. Each train is an independent processing unit. While Train 3 is offline for maintenance, Trains 1, 2, and any others continue producing LNG at their normal rates. The plant\'s total output is temporarily reduced by one train\'s capacity, but no cargo commitments need to be cancelled if the maintenance is planned and schedule buffers exist.')">
+        <span class="kopt-l">B</span>Only Train 3 stops — the remaining trains continue operating and producing LNG independently
+      </button>
+      <button class="kopt" onclick="KC('kc2-2',this,false,'Gas turbines are part of the mechanical drive system for refrigerant compressors. A hot gas path inspection is a gas turbine maintenance activity, not an electrical fault.')">
+        <span class="kopt-l">C</span>Train 3 loses its electrical supply — it will restart once power is restored within the hour
+      </button>
+      <button class="kopt" onclick="KC('kc2-2',this,false,'Trains are designed for periodic scheduled maintenance. A well-planned inspection does not automatically trigger a force majeure clause.')">
+        <span class="kopt-l">D</span>Force majeure is declared and all LNG cargo commitments are suspended
+      </button>
+    </div>
+    <div class="kc-fb" id="kc2-2-fb"></div>
+  </div>
+
+  <div class="lesson-footer">
+    <div class="lf-info">Module 2 · 200 XP awarded on completion</div>
+    <button class="btn-next-mod" onclick="completeMod('m2','m3')">Continue → The LNG Value Chain</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ MODULE 3 ═══════════════ -->
+<div class="panel" id="panel-m3">
+<div class="lesson">
+  <div class="lesson-nav"><span onclick="go('home')">Dashboard</span><span class="sep">›</span><span>Module 3</span></div>
+  <div class="lesson-h1">🔗 The LNG Value Chain</div>
+  <div class="lesson-meta"><div class="lm">⏱ ~20 min</div><div class="lm">⭐ 200 XP</div><div class="lm">📊 Intermediate</div></div>
+
+  <div class="obj-box">
+    <div class="obj-hd">🎯 Learning Objectives</div>
+    <ul class="obj-list">
+      <li>Sequence all eight links in the LNG value chain from memory</li>
+      <li>Apply the "weakest link" principle to real project failure scenarios</li>
+      <li>Explain the pipeline flow dynamics that govern gas transmission</li>
+      <li>Distinguish the LNG export chain from the domestic gas value chain</li>
+    </ul>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>Eight Links, One Chain</h3>
+    <p>The LNG value chain stretches from underground reservoirs to the end-user's burner. It comprises eight distinct links, each requiring separate investment, expertise, and contractual frameworks. The chain only functions when all eight links operate reliably and in coordination.</p>
+    <p>This interdependence creates a fundamental commercial principle: <strong>the value chain is only as strong as its weakest link.</strong> A regasification terminal not ready on time forces the first LNG cargo to be diverted to the spot market at a discount. A gas field underperforming its committed supply rates leaves a liquefaction plant running below capacity, threatening debt service ratios.</p>
+    <div class="info">
+      <strong>Historical example — West Africa Gas Pipeline (WAGP):</strong> A $590 million pipeline was built connecting Nigerian gas to Ghana, Benin, and Togo. The pipeline infrastructure itself worked. But the upstream gas supply link — disrupted by Niger Delta militancy and oil field operational issues — repeatedly failed to deliver committed volumes. The result: minimal revenues from a major infrastructure investment for years. One broken link broke the whole chain.
+    </div>
+  </div>
+
+  <!-- SIMULATION 3: CHAIN BUILDER -->
+  <div class="sim">
+    <div class="sim-head">
+      <span class="tag sim">🧩 Build-It Simulation</span>
+      <span class="sim-title">Assemble the LNG Value Chain</span>
+      <span class="sim-hint">Drag stages into the correct upstream → downstream order</span>
+    </div>
+    <div class="sim-body">
+      <div class="dz" id="dz" ondragover="dzOver(event)" ondrop="dzDrop(event)">
+        <span class="dz-ph" id="dz-ph">Drop chain stages here in sequence (upstream left → downstream right)</span>
+      </div>
+      <div class="chip-pool" id="cp"></div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:.65rem">
+        <button class="btn-sm primary" onclick="checkChain()">✓ Check My Answer</button>
+        <button class="btn-sm outline" onclick="resetChain()">↺ Reset</button>
+        <span id="chain-status" style="font-size:.72rem;color:var(--mu)"></span>
+      </div>
+      <div class="chain-msg" id="chain-msg"></div>
+    </div>
+  </div>
+
+  <!-- SIMULATION 4: PIPELINE FLOW -->
+  <div class="sim">
+    <div class="sim-head">
+      <span class="tag sim">🔬 Physics Simulation</span>
+      <span class="sim-title">Gas Pipeline Flow Dynamics</span>
+      <span class="sim-hint">Adjust pressure and diameter · see flow rate and compression needs change live</span>
+    </div>
+    <div class="sim-body">
+      <canvas id="c-pipe" width="780" height="180" style="width:100%;height:auto;border-radius:8px;border:1px solid var(--b1)"></canvas>
+      <div class="sim-row">
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Inlet Pressure (bar)</div>
+          <input type="range" id="sl-pres" min="10" max="120" value="70" oninput="updatePipe()">
+          <div class="ctrl-val" id="v-pres">70 bar</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Pipe Diameter</div>
+          <input type="range" class="gold" id="sl-diam" min="1" max="5" value="3" oninput="updatePipe()">
+          <div class="ctrl-val" id="v-diam">20″ (508mm)</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Pipeline Length (km)</div>
+          <input type="range" class="ice" id="sl-len" min="50" max="700" value="300" step="50" oninput="updatePipe()">
+          <div class="ctrl-val" id="v-len">300 km</div>
+        </div>
+      </div>
+      <div class="sim-metrics">
+        <div class="sim-metric"><div class="sm-val" id="sm-flow" style="color:var(--fl)">420</div><div class="sm-lbl">Flow (mmscfd)</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-vel" style="color:var(--ic)">9.1</div><div class="sm-lbl">Velocity (m/s)</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-drop" style="color:var(--gd)">18</div><div class="sm-lbl">Total Press. Drop (bar)</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-comp" style="color:var(--gn)">2</div><div class="sm-lbl">Compressor Stations</div></div>
+      </div>
+      <div class="sim-info" id="si-pipe">Increasing pressure drives more gas through the pipe. A larger diameter reduces friction loss. Longer pipelines need intermediate compression stations to maintain delivery pressure.</div>
+    </div>
+  </div>
+
+  <div class="kc" id="kc3-1">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 1 of 2</span></div>
+    <div class="kc-q">A new East African LNG export project completes its first liquefaction train. The planned receiving terminal in the buyer's country will not be commissioned for another 8 months. What is the most likely immediate consequence for the LNG project?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc3-1',this,false,'LNG plant storage tanks hold only a few cargoes worth of inventory — they cannot absorb months of production. A 5 MTPA train produces a cargo every 4–5 days.')">
+        <span class="kopt-l">A</span>The plant stores LNG in its own tanks until the terminal is ready — no commercial impact
+      </button>
+      <button class="kopt" onclick="KC('kc3-1',this,true,'Correct. Without a destination terminal, there is no offtake for the LNG. The project must either delay train startup (costly — the train is mechanically ready and debt is accumulating) or divert cargoes to the spot market, typically at a significant discount to the contracted price. This is a classic weakest-link failure: one downstream gap collapses the economics of the completed upstream investment.')">
+        <span class="kopt-l">B</span>The project delays startup or diverts cargoes to the spot market at a discount — the downstream gap breaks the chain
+      </button>
+      <button class="kopt" onclick="KC('kc3-1',this,false,'LNG carriers are under time-charter, costing $80–100K/day. Using them as floating storage for 8 months would be commercially devastating and is not their designed purpose.')">
+        <span class="kopt-l">C</span>LNG is stored aboard the carrier ships at no extra cost until the terminal opens
+      </button>
+      <button class="kopt" onclick="KC('kc3-1',this,false,'A regasification delay in the buyer\'s country does not automatically trigger force majeure in the seller\'s LNG SPA — unless specifically drafted. Force majeure provisions are narrowly defined.')">
+        <span class="kopt-l">D</span>The seller declares force majeure and all contractual obligations are suspended
+      </button>
+    </div>
+    <div class="kc-fb" id="kc3-1-fb"></div>
+  </div>
+
+  <div class="kc" id="kc3-2">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 2 of 2</span></div>
+    <div class="kc-q">In the domestic gas value chain, the entity that buys gas from producers and sells it onwards to multiple industrial and residential customers is called the:</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc3-2',this,false,'The regasification terminal converts LNG back to gas — it is an import infrastructure asset, not a domestic market intermediary.')">
+        <span class="kopt-l">A</span>Regasification terminal operator
+      </button>
+      <button class="kopt" onclick="KC('kc3-2',this,false,'The EPC contractor builds the physical infrastructure — it does not buy and sell gas in the market.')">
+        <span class="kopt-l">B</span>EPC contractor
+      </button>
+      <button class="kopt" onclick="KC('kc3-2',this,true,'Correct. The gas aggregator — often the national gas company — sits between producers and end users. It purchases gas from upstream producers, manages transmission infrastructure, and sells to wholesale and retail customers. The aggregator credit risk is important: it must pay producers even when downstream customers delay payment.')">
+        <span class="kopt-l">C</span>Gas aggregator (often the national gas company)
+      </button>
+      <button class="kopt" onclick="KC('kc3-2',this,false,'The IOC is the upstream producer — it extracts and sells gas, it does not typically aggregate and resell to multiple domestic customers.')">
+        <span class="kopt-l">D</span>International oil company (IOC) upstream consortium
+      </button>
+    </div>
+    <div class="kc-fb" id="kc3-2-fb"></div>
+  </div>
+
+  <div class="lesson-footer">
+    <div class="lf-info">Module 3 · 200 XP awarded on completion</div>
+    <button class="btn-next-mod" onclick="completeMod('m3','m4')">Continue → Shipping & Carriers</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ MODULE 4 ═══════════════ -->
+<div class="panel" id="panel-m4">
+<div class="lesson">
+  <div class="lesson-nav"><span onclick="go('home')">Dashboard</span><span class="sep">›</span><span>Module 4</span></div>
+  <div class="lesson-h1">🚢 LNG Shipping & Carriers</div>
+  <div class="lesson-meta"><div class="lm">⏱ ~15 min</div><div class="lm">⭐ 150 XP</div><div class="lm">📊 Technical/Commercial</div></div>
+
+  <div class="obj-box">
+    <div class="obj-hd">🎯 Learning Objectives</div>
+    <ul class="obj-list">
+      <li>Identify LNG carrier classes (standard, Q-Flex, Q-Max) and their capacities</li>
+      <li>Explain the two main containment systems (Moss and Membrane) and their trade-offs</li>
+      <li>Calculate charter economics and understand why the spot market was depressed in 2016–17</li>
+      <li>Explain what an FSRU is and why it became the preferred import solution for emerging markets</li>
+    </ul>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>How LNG Gets from Liquefaction to Market</h3>
+    <p>Once liquefied, LNG is loaded onto purpose-built carriers — the most technically complex commercial ships in the world. Every component that touches the cargo must operate reliably at −162°C while the ship rolls through ocean swells. The engineering challenge is maintaining cryogenic conditions at sea, 24 hours a day, for a voyage of days to weeks.</p>
+    <p>LNG carrier sizes evolved significantly over decades. The 1980s standard was approximately <strong>125,000 cubic metres (m³)</strong> of cargo capacity. Modern carriers typically range from <strong>160,000 to 180,000 m³</strong>. Qatar commissioned the world's largest class — <strong>Q-Max at 266,000 m³</strong> and Q-Flex at 216,000 m³ — optimised for the long-haul Qatar-to-Asia route. These vessels are too large for the Panama Canal.</p>
+  </div>
+
+  <!-- SIMULATION 5: CARRIER COMPARISON -->
+  <div class="sim">
+    <div class="sim-head">
+      <span class="tag sim">🚢 Interactive Simulation</span>
+      <span class="sim-title">LNG Carrier Economics & Comparison</span>
+      <span class="sim-hint">Select carrier type · adjust voyage parameters · see economics</span>
+    </div>
+    <div class="sim-body">
+      <canvas id="c-ship" width="780" height="200" style="width:100%;height:auto;border-radius:8px;border:1px solid var(--b1)"></canvas>
+      <div class="sim-row" style="margin-top:1rem">
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Carrier Class</div>
+          <select id="sl-carrier" onchange="updateShip()" style="background:var(--card);border:1px solid var(--b1);color:var(--tx);padding:.4rem .6rem;border-radius:5px;font-family:var(--sans);font-size:.8rem;width:100%">
+            <option value="standard">Standard (125,000 m³)</option>
+            <option value="modern" selected>Modern (174,000 m³)</option>
+            <option value="qflex">Q-Flex (216,000 m³)</option>
+            <option value="qmax">Q-Max (266,000 m³)</option>
+          </select>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Voyage Distance (nautical miles)</div>
+          <input type="range" class="gold" id="sl-voyage" min="1000" max="14000" value="6000" step="500" oninput="updateShip()">
+          <div class="ctrl-val" id="v-voyage">6,000 nm</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Charter Rate ($/day)</div>
+          <input type="range" class="ice" id="sl-charter" min="20000" max="150000" value="75000" step="5000" oninput="updateShip()">
+          <div class="ctrl-val" id="v-charter">$75,000/day</div>
+        </div>
+      </div>
+      <div class="sim-metrics">
+        <div class="sim-metric"><div class="sm-val" id="sm-cargo" style="color:var(--fl)">3.2B</div><div class="sm-lbl">Cargo (cu ft gas eq.)</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-voydays" style="color:var(--ic)">16</div><div class="sm-lbl">Voyage Days</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-voy$" style="color:var(--gd)">$1.2M</div><div class="sm-lbl">Voyage Charter Cost</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-$/mmbtu" style="color:var(--gn)">$0.37</div><div class="sm-lbl">Freight $/MMBtu</div></div>
+      </div>
+      <div class="sim-info" id="si-ship">Larger carriers spread fixed charter costs across more cargo, reducing freight cost per MMBtu. The economic breakeven charter rate for a newbuild ($200–250M) is approximately $80,000–100,000/day — far above spot rates in 2016–17.</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>Containment Systems</h3>
+    <p>Two main containment technologies compete in the LNG carrier market. <strong>Moss Rosenberg</strong> uses large independent spherical aluminium tanks that protrude above the deck — highly visible, self-supporting, and robust, but limiting cargo capacity relative to hull size. <strong>GTT Membrane</strong> (Mark III or NO96 systems) uses thin corrugated stainless steel or invar membranes bonded to an insulated box structure integrated into the ship's hull — maximising cargo volume but requiring precise structural integrity. The global fleet shifted heavily toward membrane technology through the 2000s.</p>
+    <h3><span class="bar"></span>FSRU — The Game Changer for Emerging Markets</h3>
+    <p>A <strong>Floating Storage and Regasification Unit (FSRU)</strong> is either a purpose-built or converted LNG carrier that stores LNG and regasifies it onboard, sending pipeline-quality gas ashore via a flexible riser or jetty connection. For emerging import markets, FSRUs transformed the economics of LNG access.</p>
+    <p>A permanent onshore import terminal takes 4–5 years to build and costs $500M–$1B+. An FSRU can be deployed in 12–18 months and costs $150–300M in total charter or purchase cost. It can be relocated if market conditions change. Ghana's deployment of the Golar Spirit FSRU at Tema to supply gas-fired power plants is a real-world example that helped address the country's power crisis.</p>
+  </div>
+
+  <div class="kc" id="kc4-1">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 1 of 2</span></div>
+    <div class="kc-q">A Q-Max carrier departs Ras Laffan, Qatar, bound for Futtsu Terminal in Japan. Why can this vessel NOT take a Panama Canal shortcut even if it wanted to?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc4-1',this,false,'LNG carriers are authorised to transit the Panama Canal — the prohibition is physical, not regulatory.')">
+        <span class="kopt-l">A</span>LNG carrier transits are prohibited by Panama Canal safety regulations
+      </button>
+      <button class="kopt" onclick="KC('kc4-1',this,true,'Correct. Q-Max vessels at 266,000 m³ have a beam (width) of approximately 53 metres and a draught of 12 metres — far exceeding the New Panama Canal locks which can accommodate beams up to 49 metres. Q-Max vessels were specifically designed for the Qatar-to-Asia direct route and never intended for Panama transit. They operate point-to-point between Qatar and Asian terminals.')">
+        <span class="kopt-l">B</span>The Q-Max beam and draught exceed the physical dimensions of the Panama Canal locks
+      </button>
+      <button class="kopt" onclick="KC('kc4-1',this,false,'There is no LNG cargo embargo between Qatar and Panama. The constraint is purely physical.')">
+        <span class="kopt-l">C</span>Qatari LNG is under a trade embargo that prevents transit through Panamanian waters
+      </button>
+      <button class="kopt" onclick="KC('kc4-1',this,false,'The Panama Canal is open 24/7 year-round — there is no seasonal closure.')">
+        <span class="kopt-l">D</span>The Panama Canal only permits transit during daylight hours and Q-Max voyages are too long
+      </button>
+    </div>
+    <div class="kc-fb" id="kc4-1-fb"></div>
+  </div>
+
+  <div class="kc" id="kc4-2">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 2 of 2</span></div>
+    <div class="kc-q">A West African nation needs LNG gas supply for power generation within 18 months. They have no existing import infrastructure. Budget is constrained. What infrastructure solution fits best?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc4-2',this,false,'A permanent onshore terminal takes 4–5 years minimum to permit, engineer, and construct — far beyond the 18-month window.')">
+        <span class="kopt-l">A</span>Build a permanent onshore LNG import terminal with 200,000 m³ storage tanks
+      </button>
+      <button class="kopt" onclick="KC('kc4-2',this,false,'An FLNG vessel produces LNG from an offshore gas field — this nation needs to import gas, not export it.')">
+        <span class="kopt-l">B</span>Commission a floating LNG (FLNG) production vessel over a local offshore field
+      </button>
+      <button class="kopt" onclick="KC('kc4-2',this,true,'Correct. An FSRU can be chartered or purchased and deployed in 12–18 months with minimal onshore civil works (just a jetty connection and pipeline tie-in). Multiple African nations including Ghana, Ivory Coast, Senegal, and Benin have used FSRUs to rapidly establish LNG import capability for gas-to-power projects without the capital intensity and timeline of permanent onshore terminals.')">
+        <span class="kopt-l">C</span>Charter an FSRU — deploy it in 12–18 months with minimal onshore infrastructure
+      </button>
+      <button class="kopt" onclick="KC('kc4-2',this,false,'CNG (compressed natural gas) transport by truck works for small local distribution but cannot supply the volumes needed for power generation at scale.')">
+        <span class="kopt-l">D</span>Transport CNG by truck from a neighbouring country's processing plant
+      </button>
+    </div>
+    <div class="kc-fb" id="kc4-2-fb"></div>
+  </div>
+
+  <div class="lesson-footer">
+    <div class="lf-info">Module 4 · 150 XP awarded on completion</div>
+    <button class="btn-next-mod" onclick="completeMod('m4','m5')">Continue → Pricing & Contracts</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ MODULE 5 ═══════════════ -->
+<div class="panel" id="panel-m5">
+<div class="lesson">
+  <div class="lesson-nav"><span onclick="go('home')">Dashboard</span><span class="sep">›</span><span>Module 5</span></div>
+  <div class="lesson-h1">💰 LNG Pricing & Contracts</div>
+  <div class="lesson-meta"><div class="lm">⏱ ~20 min</div><div class="lm">⭐ 200 XP</div><div class="lm">📊 Commercial</div></div>
+
+  <div class="obj-box">
+    <div class="obj-hd">🎯 Learning Objectives</div>
+    <ul class="obj-list">
+      <li>Apply the oil-indexed formula (P = α × JCC + β) to calculate LNG sale prices</li>
+      <li>Explain what slope, S-curve, and price re-opener mean in an LNG SPA</li>
+      <li>Calculate wellhead netback value from a delivered LNG price</li>
+      <li>Explain why take-or-pay contracts are the backbone of LNG project finance</li>
+    </ul>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>How LNG is Priced</h3>
+    <p>LNG pricing is not uniform globally — it varies by market, contract vintage, and indexation method. Three major reference pricing systems exist.</p>
+    <p>In Asia, the dominant method is <strong>oil-indexed pricing</strong> tied to the Japan Crude Cocktail (JCC) — the average import crude oil price into Japan. The formula is P = α × JCC + β, where α (the slope, typically 12–14%) represents the ratio of LNG to oil value, and β is a base constant adjustment.</p>
+    <p>In the US, gas-on-gas competition prevails — LNG export contracts from Sabine Pass and other US terminals are priced as <strong>Henry Hub + liquefaction fee</strong>, typically adding $2.50–3.50/MMBtu above Henry Hub spot price.</p>
+    <p>In Europe, pricing is increasingly tied to <strong>NBP (UK National Balancing Point)</strong> or TTF (Netherlands Title Transfer Facility) hub prices, with LNG competing against Russian pipeline gas.</p>
+  </div>
+
+  <div class="formula">
+    <span class="fl">// Asian Long-Term LNG Sale Price Formula</span>
+    P ($/MMBtu) = α × JCC ($/bbl) + β<br><br>
+    <span style="font-size:.75rem;color:var(--mu)">Example: α = 0.135 · JCC = $72/bbl · β = $0.50</span><br>
+    P = 0.135 × 72 + 0.50 = <strong style="color:var(--gd)">$10.22/MMBtu</strong>
+  </div>
+
+  <!-- SIMULATION 6: PRICING CALCULATOR -->
+  <div class="sim">
+    <div class="sim-head">
+      <span class="tag sim">🧮 Live Calculator</span>
+      <span class="sim-title">LNG Price & Netback Simulator</span>
+      <span class="sim-hint">Adjust all parameters · see full price waterfall in real time</span>
+    </div>
+    <div class="sim-body">
+      <div class="price-grid">
+        <div>
+          <div class="sim-ctrl" style="margin-bottom:.85rem">
+            <div class="ctrl-lbl">JCC Crude Price ($/bbl)</div>
+            <input type="range" class="gold" id="sl-jcc" min="25" max="130" value="72" oninput="updatePrice()">
+            <div class="ctrl-val" id="v-jcc">$72/bbl</div>
+          </div>
+          <div class="sim-ctrl" style="margin-bottom:.85rem">
+            <div class="ctrl-lbl">Slope α (% of JCC)</div>
+            <input type="range" class="ice" id="sl-slope" min="8" max="18" value="13.5" step=".5" oninput="updatePrice()">
+            <div class="ctrl-val" id="v-slope">13.5%</div>
+          </div>
+          <div class="sim-ctrl" style="margin-bottom:.85rem">
+            <div class="ctrl-lbl">Base Constant β ($/MMBtu)</div>
+            <input type="range" id="sl-beta" min="-2" max="3" value="0.5" step=".1" oninput="updatePrice()">
+            <div class="ctrl-val" id="v-beta">$0.50</div>
+          </div>
+          <div class="sim-ctrl" style="margin-bottom:.85rem">
+            <div class="ctrl-lbl">Liquefaction Cost ($/MMBtu)</div>
+            <input type="range" id="sl-liqc" min="1.5" max="5" value="2.8" step=".1" oninput="updatePrice()">
+            <div class="ctrl-val" id="v-liqc">$2.80</div>
+          </div>
+          <div class="sim-ctrl">
+            <div class="ctrl-lbl">Shipping Cost ($/MMBtu)</div>
+            <input type="range" id="sl-ship" min="0.3" max="2.5" value="1.2" step=".1" oninput="updatePrice()">
+            <div class="ctrl-val" id="v-ship">$1.20</div>
+          </div>
+        </div>
+        <div class="price-result">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:.4rem">Delivered LNG Price (FOB Destination)</div>
+          <div class="pr-main" id="pr-main">$9.82</div>
+          <div class="pr-label">$/MMBtu</div>
+          <div class="pr-breakdown">
+            <div class="pb"><span class="k">Oil component (α × JCC)</span><span class="v" id="pb-oil">$9.72</span></div>
+            <div class="pb"><span class="k">Base constant (β)</span><span class="v" id="pb-beta">+$0.50</span></div>
+            <div class="pb"><span class="k">= FOB LNG Price</span><span class="v" id="pb-fob">$10.22</span></div>
+            <div style="height:1px;background:var(--b1);margin:.3rem 0"></div>
+            <div class="pb"><span class="k">– Shipping cost</span><span class="v" id="pb-ship">–$1.20</span></div>
+            <div class="pb"><span class="k">– Regas cost</span><span class="v">–$0.35</span></div>
+            <div class="pb"><span class="k">– Liquefaction cost</span><span class="v" id="pb-liqc">–$2.80</span></div>
+            <div class="pb"><span class="k">– Processing cost</span><span class="v">–$0.25</span></div>
+            <div class="pb total" id="pb-nb"><span class="k">Wellhead Netback</span><span class="v">$5.62</span></div>
+          </div>
+          <div style="margin-top:.75rem;font-size:.7rem;color:var(--mu);line-height:1.6" id="pr-scurve">S-Curve status: within normal range</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="kc" id="kc5-1">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 1 of 2</span></div>
+    <div class="kc-q">Two LNG buyers are negotiating SPA slope with the same seller. Buyer A agrees α = 0.12, Buyer B agrees α = 0.14. At a JCC of $80/bbl with β = $0.50, what is the annual financial difference if each buys 3 MTPA (~148M MMBtu/year)?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc5-1',this,false,'Let\'s recalculate. At JCC $80: Buyer A price = 0.12×80+0.50 = $10.10. Buyer B price = 0.14×80+0.50 = $11.70. Difference per MMBtu = $1.60. Annual = $1.60 × 148M = $236.8M.')">
+        <span class="kopt-l">A</span>About $48 million per year
+      </button>
+      <button class="kopt" onclick="KC('kc5-1',this,true,'Correct. Buyer A at α=0.12: P = 0.12×80+0.50 = $10.10/MMBtu. Buyer B at α=0.14: P = 0.14×80+0.50 = $11.70/MMBtu. Difference = $1.60/MMBtu × 148 million MMBtu/year = $236.8 million/year. This is why slope is the most commercially sensitive variable in any LNG SPA negotiation — a 2% difference translates to hundreds of millions of dollars annually.')">
+        <span class="kopt-l">B</span>About $237 million per year — a 2% slope difference is commercially enormous
+      </button>
+      <button class="kopt" onclick="KC('kc5-1',this,false,'Check the arithmetic. Difference per MMBtu = (0.14-0.12)×80 = $1.60, not $3.20.')">
+        <span class="kopt-l">C</span>About $474 million per year
+      </button>
+      <button class="kopt" onclick="KC('kc5-1',this,false,'The slope difference creates a straightforward arithmetic difference — it is not zero. Even a 1% slope change at $80/bbl creates $0.80/MMBtu difference.')">
+        <span class="kopt-l">D</span>Zero — both buyers pay the same because the base constant β is identical
+      </button>
+    </div>
+    <div class="kc-fb" id="kc5-1-fb"></div>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>Take-or-Pay — Why Banks Lend Billions</h3>
+    <p>LNG projects cost $10–30 billion to build. Commercial banks will only lend at that scale if they can see a reliable, contractually guaranteed revenue stream that will service debt over 20+ years. <strong>Take-or-pay (ToP)</strong> contracts provide exactly this mechanism.</p>
+    <p>Under a ToP clause, the buyer commits to pay for a minimum quantity of LNG — typically <strong>80–90% of Annual Contract Quantity (ACQ)</strong> — whether or not they physically lift the cargo. If they don't take the gas, they still pay. This transforms market uncertainty into contractual certainty, giving lenders the confidence to commit long-term capital.</p>
+    <div class="highlight">
+      <strong>Price Re-openers:</strong> Long-term SPAs include price review clauses (every 3–5 years) allowing either party to request renegotiation if market conditions have changed "materially." The 2014–2016 oil price collapse — when oil fell from $110/bbl to below $30/bbl — triggered widespread price re-opener discussions as buyers on oil-indexed contracts saw spot market prices collapse far below their long-term contract rates.
+    </div>
+  </div>
+
+  <div class="kc" id="kc5-2">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 2 of 2</span></div>
+    <div class="kc-q">A power utility in Asia has a take-or-pay LNG contract with a ToP threshold of 85% of 3 MTPA ACQ. Due to an economic slowdown, they only need 2.1 MTPA. How much must they pay for, and how much of that is "stranded"?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc5-2',this,false,'85% of 3 MTPA = 2.55 MTPA minimum payment obligation. The buyer only needs 2.1 MTPA, not 2.3 MTPA.')">
+        <span class="kopt-l">A</span>They pay for 2.3 MTPA; 0.2 MTPA is stranded
+      </button>
+      <button class="kopt" onclick="KC('kc5-2',this,true,'Correct. ToP minimum = 85% × 3 MTPA = 2.55 MTPA. The buyer needs only 2.1 MTPA, so they must pay for 2.55 MTPA regardless. The 0.45 MTPA they pay for but don\'t lift is "stranded" — they are paying for gas they cannot use. In practice, buyers can sometimes "make up" or bank these volumes against future periods if SPA terms allow.')">
+        <span class="kopt-l">B</span>They pay for 2.55 MTPA; 0.45 MTPA is stranded — they pay but cannot use it
+      </button>
+      <button class="kopt" onclick="KC('kc5-2',this,false,'Take-or-pay means you pay for the minimum regardless of actual need. They cannot simply pay for what they use.')">
+        <span class="kopt-l">C</span>They only pay for what they use: 2.1 MTPA — take-or-pay allows flexibility below ACQ
+      </button>
+      <button class="kopt" onclick="KC('kc5-2',this,false,'3 MTPA is the full ACQ — take-or-pay minimums are set below the full ACQ to give some flexibility.')">
+        <span class="kopt-l">D</span>They pay for the full 3 MTPA; 0.9 MTPA is stranded
+      </button>
+    </div>
+    <div class="kc-fb" id="kc5-2-fb"></div>
+  </div>
+
+  <div class="lesson-footer">
+    <div class="lf-info">Module 5 · 200 XP awarded on completion</div>
+    <button class="btn-next-mod" onclick="completeMod('m5','m6')">Continue → Project Structures</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ MODULE 6 ═══════════════ -->
+<div class="panel" id="panel-m6">
+<div class="lesson">
+  <div class="lesson-nav"><span onclick="go('home')">Dashboard</span><span class="sep">›</span><span>Module 6</span></div>
+  <div class="lesson-h1">⚖️ LNG Project Structures</div>
+  <div class="lesson-meta"><div class="lm">⏱ ~18 min</div><div class="lm">⭐ 200 XP</div><div class="lm">📊 Commercial/Legal</div></div>
+  <div class="obj-box">
+    <div class="obj-hd">🎯 Learning Objectives</div>
+    <ul class="obj-list">
+      <li>Compare Integrated, Merchant, and Tolling structures and identify real-world examples</li>
+      <li>Match project structure to financing requirement and risk profile</li>
+      <li>Explain what drives the choice of structure from the perspectives of government, IOC, and lenders</li>
+    </ul>
+  </div>
+  <div class="prose">
+    <h3><span class="bar"></span>Three Core Commercial Models</h3>
+    <p>Every LNG export project must answer a fundamental question: who owns the gas at each stage, who owns the liquefaction plant, and how does money flow from LNG buyer back to gas producer? Three established structures answer this question in different ways.</p>
+    <p><strong>Integrated:</strong> The same entities own the upstream gas field and the LNG export plant. Revenue flows directly from LNG buyers to the integrated consortium. No separate gas transfer price needs to be negotiated. Qatar's Qatargas, Australia's North West Shelf, and Norway's Snøhvit are integrated projects.</p>
+    <p><strong>Merchant:</strong> Separate entities own the upstream and the LNG plant. The plant company buys gas from the upstream under a long-term gas SPA, then sells LNG under LNG SPAs. This allows different investors (including the government NOC) to hold equity in the plant separately from the upstream. Nigeria LNG, Angola LNG, and Trinidad LNG Trains 1–3 follow this structure.</p>
+    <p><strong>Tolling:</strong> The LNG plant provides liquefaction as a service. The gas owner retains title to the gas and LNG throughout. The plant earns a fixed monthly reservation tariff plus a variable cargo charge. The gas owner bears all commodity price and market risk. Freeport LNG, Cameron LNG, and Cove Point in the US use tolling structures.</p>
+  </div>
+
+  <div class="kc" id="kc6-1">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 1 of 2</span></div>
+    <div class="kc-q">Mozambique's Rovuma Basin LNG project has multiple upstream concession holders (ENI, ExxonMobil) whose gas will feed a single LNG plant. The government (through ENH) wants equity in the LNG plant separately from the upstream. Which structure fits best?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc6-1',this,false,'Integrated structures are difficult to apply when multiple upstream concession holders exist — it would require all upstream owners to also co-own the LNG plant in exactly the same proportions, which is commercially complex.')">
+        <span class="kopt-l">A</span>Integrated — all upstream owners also own the LNG plant proportionally
+      </button>
+      <button class="kopt" onclick="KC('kc6-1',this,true,'Correct. The Merchant structure creates a separate LNG project company that aggregates gas from multiple upstream sources via individual gas SPAs. ENH can hold equity in this company (separate from its upstream interests) without being a direct upstream concession holder. Lenders can assess the creditworthiness of both upstream gas suppliers and LNG buyers. This is how the Mozambique LNG project has been structured.')">
+        <span class="kopt-l">B</span>Merchant — a separate LNG company buys gas from multiple upstreams; ENH takes equity in the LNG company
+      </button>
+      <button class="kopt" onclick="KC('kc6-1',this,false,'Tolling structures work well for a single large gas owner using spare plant capacity. With multiple upstream owners and a government wanting plant equity, tolling creates additional complexity around who manages gas marketing and what happens when different tollers need different cargo slots.')">
+        <span class="kopt-l">C</span>Tolling — each upstream owner tolls their gas through the shared plant independently
+      </button>
+      <button class="kopt" onclick="KC('kc6-1',this,false,'ENH does not currently have the balance sheet, technical expertise, or project finance access to develop a $15B+ LNG export facility independently without IOC involvement.')">
+        <span class="kopt-l">D</span>Government-owned — ENH develops and operates the full facility without IOC partnership
+      </button>
+    </div>
+    <div class="kc-fb" id="kc6-1-fb"></div>
+  </div>
+
+  <!-- SCENARIO -->
+  <div class="scenario">
+    <div class="sc-head">
+      <div class="sc-tag">🎯 Risk Allocation Scenario</div>
+      <div class="sc-title">In a Tolling LNG structure, who bears the risk if global LNG spot prices fall to $4/MMBtu — below the combined cost of gas + tolling fee + shipping?</div>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">The LNG plant earns a fixed monthly reservation tariff. The gas owner retains title throughout. LNG prices have collapsed due to global oversupply.</div>
+      <div class="sc-choices" id="sc6-choices">
+        <div class="sc-choice" onclick="SC('sc6','lngco')"><strong>A. LNG Plant Company</strong><br><span style="font-size:.74rem;color:var(--mu)">They earn less tolling revenue when market prices fall</span></div>
+        <div class="sc-choice" onclick="SC('sc6','toller')"><strong>B. Tolling Customer (Gas Owner)</strong><br><span style="font-size:.74rem;color:var(--mu)">They retain title and must sell LNG at market price</span></div>
+        <div class="sc-choice" onclick="SC('sc6','govt')"><strong>C. Host Government</strong><br><span style="font-size:.74rem;color:var(--mu)">Royalty revenues fall with LNG prices</span></div>
+        <div class="sc-choice" onclick="SC('sc6','lender')"><strong>D. Project Lenders</strong><br><span style="font-size:.74rem;color:var(--mu)">Debt cannot be serviced when prices collapse</span></div>
+      </div>
+      <div class="sc-fb bad" id="sc6-lngco">⚠️ <strong>Incorrect.</strong> In a Tolling structure, the LNG plant company does NOT take title to the gas or LNG. It earns a fixed monthly reservation charge regardless of LNG market prices. The plant's revenue is contractually insulated from commodity price movements — this is precisely why lenders favour tolling structures.</div>
+      <div class="sc-fb good" id="sc6-toller">✅ <strong>Correct.</strong> The tolling customer (gas owner) retains title throughout. They pay the gas cost + fixed tolling tariff + variable cargo charges + shipping, regardless of whether they can sell LNG above this all-in cost. At $4/MMBtu with a total cost stack of $7–8/MMBtu, every cargo sold destroys value. The gas owner must decide: sell at a loss (maintain market position) or shut in production (save cash but breach SPA commitments).</div>
+      <div class="sc-fb bad" id="sc6-govt">⚠️ <strong>Partially affected but not the primary risk bearer.</strong> Government royalties and profit petroleum decline with lower LNG revenues, but the immediate commercial risk — cash losses on each cargo — falls on the tolling customer who owns the LNG.</div>
+      <div class="sc-fb bad" id="sc6-lender">⚠️ <strong>Not the primary bearer in a Tolling structure.</strong> Project lenders are protected by the fixed monthly reservation charge owed to the LNG plant regardless of market prices. This guaranteed revenue is specifically designed to service project debt. Lenders remain insulated even when the tolling customer loses money on cargo sales.</div>
+    </div>
+  </div>
+
+  <div class="kc" id="kc6-2">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 2 of 2</span></div>
+    <div class="kc-q">What is the "gas transfer price" and why is it a contentious issue in Merchant LNG structures?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc6-2',this,false,'The gas transfer price is between the upstream producer and the LNG plant company — not between the LNG plant and the buyer.')">
+        <span class="kopt-l">A</span>The price at which the LNG plant sells LNG to overseas buyers
+      </button>
+      <button class="kopt" onclick="KC('kc6-2',this,true,'Correct. In a Merchant structure, the upstream producer and the LNG plant are separate entities. The gas transfer price (set in the Gas SPA) determines how economic value is divided between the two segments. Because upstream production and LNG plant operations often fall under different fiscal regimes (with different tax rates), both sides have an incentive to argue for a transfer price that maximises their own after-tax return. Setting a price that is "arm\'s length" and acceptable to both the government and the investors requires careful negotiation.')">
+        <span class="kopt-l">B</span>The price in the Gas SPA between the upstream producer and the LNG plant — contested because it determines how value is split between two different fiscal regimes
+      </button>
+      <button class="kopt" onclick="KC('kc6-2',this,false,'The gas transfer price is not a government levy — it is a commercial price set bilaterally in a Gas SPA between the upstream and LNG plant entities.')">
+        <span class="kopt-l">C</span>The government royalty charged per unit of gas transferred from the wellhead to the processing plant
+      </button>
+      <button class="kopt" onclick="KC('kc6-2',this,false,'Pipeline tariffs are a cost component of transport — the gas transfer price is a commodity price for the gas itself.')">
+        <span class="kopt-l">D</span>The pipeline tariff charged for moving gas from the gas field to the liquefaction plant
+      </button>
+    </div>
+    <div class="kc-fb" id="kc6-2-fb"></div>
+  </div>
+
+  <div class="lesson-footer">
+    <div class="lf-info">Module 6 · 200 XP awarded on completion</div>
+    <button class="btn-next-mod" onclick="completeMod('m6','m7')">Continue → Government & Policy</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ MODULE 7 ═══════════════ -->
+<div class="panel" id="panel-m7">
+<div class="lesson">
+  <div class="lesson-nav"><span onclick="go('home')">Dashboard</span><span class="sep">›</span><span>Module 7</span></div>
+  <div class="lesson-h1">🏛️ Government Role & Policy</div>
+  <div class="lesson-meta"><div class="lm">⏱ ~18 min</div><div class="lm">⭐ 200 XP</div><div class="lm">📊 Policy/Strategic</div></div>
+  <div class="obj-box">
+    <div class="obj-hd">🎯 Learning Objectives</div>
+    <ul class="obj-list">
+      <li>Define a Domestic Supply Obligation (DSO) and analyse its trade-offs</li>
+      <li>List the key elements of a Gas Master Plan and explain why sequencing matters</li>
+      <li>Explain the role of an independent regulator across the gas value chain</li>
+      <li>Describe the LNG project development phases from screening to FID</li>
+    </ul>
+  </div>
+  <div class="prose">
+    <h3><span class="bar"></span>The Government's Dual Role</h3>
+    <p>Every gas-producing government simultaneously wears two hats: it is the <strong>resource steward</strong> — representing citizens' long-term interests in how the national resource is developed — and a potential <strong>commercial participant</strong> through its national oil company.</p>
+    <p>These roles can create tension. As resource steward, the government wants maximum domestic benefit, low domestic gas prices, and strong local content requirements. As a commercial participant, it wants bankable project economics and creditworthy partners. Balancing these objectives is the central challenge of gas sector governance.</p>
+    <h3><span class="bar"></span>Domestic Supply Obligation (DSO)</h3>
+    <p>A DSO is a regulatory instrument requiring gas producers to allocate a minimum percentage of their production to the domestic market before any gas can be exported. The rationale is straightforward: a country's citizens should benefit from their own natural resources before those resources are shipped abroad.</p>
+    <p>Real examples: Nigeria requires all operators to meet a minimum domestic gas obligation for power generation. Israel reserves 60% of its offshore gas for domestic use. Egypt mandates 30% domestic allocation. Western Australia requires 15% of all gas produced in the state to remain onshore.</p>
+    <div class="highlight">
+      <strong>DSO Trade-offs:</strong> A well-designed DSO stimulates domestic market development and ensures energy security. A poorly designed DSO — particularly one setting domestic prices below production cost — discourages investment, causes gas shortages, and can make the entire development unfinanceable. Getting the domestic price mechanism right is as important as setting the percentage.
+    </div>
+    <h3><span class="bar"></span>Gas Master Plan — A Country's GPS for Gas Development</h3>
+    <p>A Gas Master Plan (GMP) is the overarching strategic framework that guides a government's entire approach to gas sector development. It answers: How much gas do we have? What should we do with it? Who gets it first? At what price? Through what infrastructure? Governed by what regulations?</p>
+    <p>Key GMP elements include: reserve evaluation, domestic supply-demand analysis, export capacity planning, infrastructure development roadmap, pricing policy framework, institutional and regulatory architecture, and identification of anchor projects — large investments that justify the capital infrastructure required.</p>
+  </div>
+
+  <div class="kc" id="kc7-1">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 1 of 2</span></div>
+    <div class="kc-q">A government sets domestic gas prices at $1.00/MMBtu through its DSO, while the market cost of producing and processing that gas is $3.50/MMBtu. What is the likely long-term consequence?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc7-1',this,false,'Below-cost pricing initially increases consumption but destroys the investment incentive for new supply — leading to shortages, not abundance.')">
+        <span class="kopt-l">A</span>Domestic gas consumption booms, creating a thriving local market that attracts more upstream investment
+      </button>
+      <button class="kopt" onclick="KC('kc7-1',this,true,'Correct. When domestic prices are set below production cost, gas producers lose money on every unit sold domestically. New investment in gas production dries up. Existing producers divert gas to export markets where prices are economic. The domestic market experiences chronic shortages — the opposite of the intended goal. This was Nigeria\'s experience for decades: massive gas reserves, chronic domestic shortage due to below-cost regulated prices.')">
+        <span class="kopt-l">B</span>Investment in domestic gas supply dries up — producers lose money at these prices and chronic shortages result
+      </button>
+      <button class="kopt" onclick="KC('kc7-1',this,false,'Below-cost domestic prices create a fiscal burden on either producers (who absorb losses) or the government (which subsidises the gap) — neither is a neutral outcome.')">
+        <span class="kopt-l">C</span>The market equilibrates naturally — producers and consumers find a sustainable middle price
+      </button>
+      <button class="kopt" onclick="KC('kc7-1',this,false,'International lenders specifically evaluate domestic pricing policies during due diligence. Below-cost pricing is a red flag that can make the entire project unfinanceable.')">
+        <span class="kopt-l">D</span>International project lenders are indifferent to domestic pricing — only export revenue matters to them
+      </button>
+    </div>
+    <div class="kc-fb" id="kc7-1-fb"></div>
+  </div>
+
+  <div class="prose">
+    <h3><span class="bar"></span>LNG Project Development Phases</h3>
+    <p>An LNG export project progresses through structured phases, each a decision gate: proceed or exit. Capital commitments escalate dramatically at each stage.</p>
+    <p><strong>Screening & Evaluation (6–12 months, $0.5–1M)</strong>: Is the resource size, location, and market opportunity sufficient to justify a world-scale project? Minimum viable threshold: approximately 8 TCF of proven reserves to support a single 5 MTPA train for 20 years.</p>
+    <p><strong>Pre-FEED (6 months, $2–5M)</strong>: Preliminary designs and initial cost estimates. Identifies major technical and commercial risks.</p>
+    <p><strong>FEED (12–18 months, $40–80M)</strong>: Detailed engineering sufficient to invite binding EPC bids. Produces cost estimates at ±15–25% accuracy. This is the point of major cost commitment before FID.</p>
+    <p><strong>EPC Bidding & Selection (6–8 months)</strong>: Only 6–7 contractors globally are qualified for world-scale LNG EPC work. Competitive bidding historically saves 10–20% vs. single-source negotiation.</p>
+    <p><strong>Final Investment Decision (FID)</strong>: The moment of full commitment. Requires: government approvals, enabling legislation, financed LNG SPAs, confirmed project finance from lenders. EPC contract is awarded simultaneously.</p>
+    <p><strong>EPC Construction (4–6 years, $1,500–$2,500 per tonne of capacity)</strong>: Peak workforce of 5,000–8,000 workers. First 16 months focused on engineering and procurement in home offices. After month 16, activity shifts to site.</p>
+  </div>
+
+  <div class="kc" id="kc7-2">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 2 of 2</span></div>
+    <div class="kc-q">A country has 4 TCF of proven gas reserves and is considering building a 5 MTPA LNG export train. Based on industry thresholds, is this reserve base sufficient?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc7-2',this,false,'4 TCF is substantially below the ~8 TCF threshold needed to underpin a 5 MTPA train for 20 years of plateau production.')">
+        <span class="kopt-l">A</span>Yes — 4 TCF is more than adequate for a 5 MTPA train
+      </button>
+      <button class="kopt" onclick="KC('kc7-2',this,true,'Correct. The industry rule of thumb is approximately 8 TCF of proven reserves to support a single 5 MTPA train for 20 years of plateau production. At 4 TCF, the reserve base is approximately half of what is needed. The project could proceed with a smaller train size (~2–2.5 MTPA), or the developer must drill additional appraisal wells to upgrade probable reserves to proven status before financing is achievable.')">
+        <span class="kopt-l">B</span>No — approximately 8 TCF is the minimum for a 5 MTPA train over 20 years; 4 TCF is insufficient
+      </button>
+      <button class="kopt" onclick="KC('kc7-2',this,false,'Reserve certification relates to confidence level (proved, probable, possible) — the issue here is total volume, not certification status.')">
+        <span class="kopt-l">C</span>It depends — if the reserves are certified by an independent firm, any volume is sufficient
+      </button>
+      <button class="kopt" onclick="KC('kc7-2',this,false,'Reserve requirements are driven by plant capacity and contract duration, not government policy choices. The physics of gas production decline curves determine the minimum.')">
+        <span class="kopt-l">D</span>Reserve requirements are set by government policy — the country can choose to accept lower thresholds
+      </button>
+    </div>
+    <div class="kc-fb" id="kc7-2-fb"></div>
+  </div>
+
+  <div class="lesson-footer">
+    <div class="lf-info">Module 7 · 200 XP awarded on completion</div>
+    <button class="btn-next-mod" onclick="completeMod('m7','m8')">Continue → African Gas Markets</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ MODULE 8 ═══════════════ -->
+<div class="panel" id="panel-m8">
+<div class="lesson">
+  <div class="lesson-nav"><span onclick="go('home')">Dashboard</span><span class="sep">›</span><span>Module 8</span></div>
+  <div class="lesson-h1">🌍 African Gas Markets</div>
+  <div class="lesson-meta"><div class="lm">⏱ ~20 min</div><div class="lm">⭐ 200 XP</div><div class="lm">📊 Strategic</div></div>
+  <div class="obj-box">
+    <div class="obj-hd">🎯 Learning Objectives</div>
+    <ul class="obj-list">
+      <li>Map Africa's key gas-producing and gas-importing nations and their supply volumes</li>
+      <li>Explain the economic logic of the Africa gas-to-power opportunity</li>
+      <li>Analyse the West Africa Gas Pipeline as a case study in cross-border gas trade</li>
+      <li>Evaluate LNG import strategies for African nations without domestic gas production</li>
+    </ul>
+  </div>
+  <div class="prose">
+    <h3><span class="bar"></span>Africa at a Crossroads</h3>
+    <p>Sub-Saharan Africa faces a paradox: some of the world's largest gas reserves discovered in the 21st century sit in countries where hundreds of millions of people have no reliable electricity. Mozambique and Tanzania together have discovered over <strong>250 trillion cubic feet (TCF)</strong> of offshore gas — enough to supply the entire EU for over 15 years. Yet domestic electricity access rates remain among the lowest globally.</p>
+    <p>The challenge is connecting these molecules to domestic demand while also generating the export revenue needed to finance their development in the first place. An LNG export project requires a world-scale gas field and creditworthy international buyers. A domestic gas market requires infrastructure, local buyers with credit, and a regulatory framework — none of which exists overnight.</p>
+    <h3><span class="bar"></span>The Gas-to-Power Opportunity</h3>
+    <p>Power generation is the natural first domestic market for new gas discoveries in Africa. The demand is massive, the technology is proven, and the utility company (even if government-owned) can provide a PPA that lenders accept as a bankable offtake. The US Power Africa initiative estimated that achieving 30,000 MW of additional power generation in sub-Saharan Africa by 2030 would require approximately 5.5 BCF/day of additional gas supply.</p>
+    <div class="highlight">
+      <strong>The FSRU solution for Africa:</strong> Several West African nations — Ghana, Ivory Coast, Senegal, and Benin — have used FSRUs to rapidly establish LNG import terminals, enabling gas-fired power generation without waiting for large domestic gas field development. This is particularly relevant where domestic gas supply is unreliable or constrained by pipeline disruptions.
+    </div>
+  </div>
+
+  <!-- SUPPLY/DEMAND SIM -->
+  <div class="sim">
+    <div class="sim-head">
+      <span class="tag sim">📊 Market Simulation</span>
+      <span class="sim-title">African Gas Supply vs Power Demand</span>
+      <span class="sim-hint">Adjust supply sources and power demand · find the balance point</span>
+    </div>
+    <div class="sim-body">
+      <canvas id="c-market" width="780" height="200" style="width:100%;height:auto;border-radius:8px;border:1px solid var(--b1)"></canvas>
+      <div class="sim-row">
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Domestic Gas Production (BCF/day)</div>
+          <input type="range" class="gold" id="sl-dom" min="0" max="5" value="1.5" step=".1" oninput="updateMarket()">
+          <div class="ctrl-val" id="v-dom">1.5 BCF/d</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">LNG Import Volume (MTPA)</div>
+          <input type="range" class="ice" id="sl-imp" min="0" max="10" value="2" step=".5" oninput="updateMarket()">
+          <div class="ctrl-val" id="v-imp">2.0 MTPA</div>
+        </div>
+        <div class="sim-ctrl">
+          <div class="ctrl-lbl">Power Demand (GW gas-fired)</div>
+          <input type="range" id="sl-pwr" min="1" max="15" value="5" oninput="updateMarket()">
+          <div class="ctrl-val" id="v-pwr">5 GW</div>
+        </div>
+      </div>
+      <div class="sim-metrics">
+        <div class="sim-metric"><div class="sm-val" id="sm-supply" style="color:var(--gn)">2.1</div><div class="sm-lbl">Total Supply (BCF/d)</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-demand" style="color:var(--fl)">2.5</div><div class="sm-lbl">Power Demand (BCF/d)</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-gap" style="color:var(--rd)">-0.4</div><div class="sm-lbl">Supply Gap (BCF/d)</div></div>
+        <div class="sim-metric"><div class="sm-val" id="sm-elect" style="color:var(--ic)">4.2</div><div class="sm-lbl">MW Achievable</div></div>
+      </div>
+      <div class="sim-info" id="si-market">Increase domestic production or LNG imports to close the supply gap. Each GW of gas-fired generation requires approximately 0.5 BCF/day of gas supply.</div>
+    </div>
+  </div>
+
+  <div class="kc" id="kc8-1">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 1 of 2</span></div>
+    <div class="kc-q">The West Africa Gas Pipeline (WAGP) connects Nigeria to Ghana, Benin, and Togo. It has consistently under-delivered on its designed capacity since 2009. What has been the primary operational cause?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc8-1',this,false,'The WAGP subsea pipeline itself has generally been technically reliable. The constraint has been upstream gas availability, not pipeline mechanical failure.')">
+        <span class="kopt-l">A</span>Repeated mechanical failures in the subsea pipeline sections
+      </button>
+      <button class="kopt" onclick="KC('kc8-1',this,true,'Correct. The WAGP pipeline infrastructure largely works as designed. The problem has been upstream: disruptions to Nigerian gas production caused by Niger Delta militancy, pipeline sabotage, operational issues at Shell and Chevron fields, and periodic gas supply-payment disputes between the parties. This is a textbook "weakest link" problem — a $590M infrastructure investment underperformed for years because one upstream link in the chain repeatedly broke.')">
+        <span class="kopt-l">B</span>Disruptions to upstream Nigerian gas supply caused by militancy, sabotage, and commercial disputes
+      </button>
+      <button class="kopt" onclick="KC('kc8-1',this,false,'Ghana\'s power demand has actually exceeded projections — insufficient demand has not been the WAGP\'s problem.')">
+        <span class="kopt-l">C</span>Insufficient power demand in Ghana to justify the gas volumes committed in the pipeline
+      </button>
+      <button class="kopt" onclick="KC('kc8-1',this,false,'The WAGP received intergovernmental agreements and approvals — the legal framework was in place before commissioning.')">
+        <span class="kopt-l">D</span>Legal disputes over the intergovernmental agreement terms between Nigeria and Ghana
+      </button>
+    </div>
+    <div class="kc-fb" id="kc8-1-fb"></div>
+  </div>
+
+  <div class="kc" id="kc8-2">
+    <div class="kc-head"><span class="tag check">Knowledge Check</span><span class="kc-num">Q 2 of 2</span></div>
+    <div class="kc-q">Tanzania discovers 57 TCF of offshore gas but needs at least 20 years to develop a large LNG export facility. Meanwhile, 65% of its population lacks electricity. What is the most logical near-term gas strategy?</div>
+    <div class="kc-opts">
+      <button class="kopt" onclick="KC('kc8-2',this,false,'Waiting 20 years to begin domestic benefits is politically untenable and economically unnecessary. Phased development allows early domestic supply.')">
+        <span class="kopt-l">A</span>Focus exclusively on the LNG export project — domestic benefits come after FID in 20 years
+      </button>
+      <button class="kopt" onclick="KC('kc8-2',this,true,'Correct. Tanzania\'s Gas Master Plan correctly identifies this dual-track approach. Small volumes of gas from existing shallow fields can be piped ashore immediately via small-scale infrastructure (as Tanzania did with the Songo Songo and Mnazi Bay pipelines) to fuel power plants and create a domestic market. In parallel, the large offshore reserves are developed for LNG export — with a DSO ensuring domestic reservation. This sequencing creates early citizen benefits while building toward export revenue.')">
+        <span class="kopt-l">B</span>Develop shallow near-shore gas for immediate domestic power generation via pipeline while planning the offshore LNG export project in parallel
+      </button>
+      <button class="kopt" onclick="KC('kc8-2',this,false,'With 57 TCF, Tanzania has far more gas than its domestic market will ever need. Keeping all gas domestic would forego billions in export revenue needed to fund the country\'s development.')">
+        <span class="kopt-l">C</span>Reserve all gas for domestic use — ban LNG exports until 100% electricity access is achieved
+      </button>
+      <button class="kopt" onclick="KC('kc8-2',this,false,'Importing gas for a country that has 57 TCF domestically would be economically irrational and politically indefensible.')">
+        <span class="kopt-l">D</span>Import LNG from Qatar via an FSRU while the domestic gas fields are developed
+      </button>
+    </div>
+    <div class="kc-fb" id="kc8-2-fb"></div>
+  </div>
+
+  <!-- SCENARIO -->
+  <div class="scenario">
+    <div class="sc-head">
+      <div class="sc-tag">🎯 Strategic Decision Scenario</div>
+      <div class="sc-title">Ghana: power blackouts cost $2M/day. No domestic gas. Choose your energy strategy.</div>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">Ghana's domestic gas from Jubilee field is unreliable. Daily 12-hour blackouts are costing the economy $2M/day ($730M/year). You have $300M budget and need gas for power within 18 months.</div>
+      <div class="sc-choices" id="sc8-choices">
+        <div class="sc-choice" onclick="SC('sc8','fsru')"><strong>A. Charter an FSRU</strong><br><span style="font-size:.74rem;color:var(--mu)">Deploy in 12–18 months, $150–250M, relocatable</span></div>
+        <div class="sc-choice" onclick="SC('sc8','onshore')"><strong>B. Build Onshore Terminal</strong><br><span style="font-size:.74rem;color:var(--mu)">4–5 years to build, $600M+, permanent</span></div>
+        <div class="sc-choice" onclick="SC('sc8','pipeline')"><strong>C. Build Pipeline from Nigeria</strong><br><span style="font-size:.74rem;color:var(--mu)">Extend WAGP — 2–3 years, depends on Nigeria supply reliability</span></div>
+        <div class="sc-choice" onclick="SC('sc8','coal')"><strong>D. Build Coal Power Plants</strong><br><span style="font-size:.74rem;color:var(--mu)">Fuel independent, 3–4 years, $400M+, 40-year lock-in</span></div>
+      </div>
+      <div class="sc-fb good" id="sc8-fsru">✅ <strong>Best choice for this situation.</strong> Ghana actually did this — the Golar Spirit FSRU was deployed at Tema. At $2M/day in blackout losses, delaying 12 months costs $730M — more than the FSRU itself. The FSRU is the only solution that fits both the 18-month timeline and the $300M budget. It can be returned or upgraded to a permanent terminal once market volumes justify the larger investment. This is exactly the "FSRU as bridge" strategy.</div>
+      <div class="sc-fb bad" id="sc8-onshore">⚠️ <strong>Wrong timeline and budget.</strong> An onshore terminal takes 4–5 years (Ghana loses another $3.65B in blackout costs during construction) and costs $600M+ (exceeds budget). The right solution for the immediate crisis — but the right long-term solution once FSRU proves out the market volumes.</div>
+      <div class="sc-fb bad" id="sc8-pipeline">⚠️ <strong>High dependency risk.</strong> Nigeria's WAGP supply has historically been unreliable due to upstream disruptions. Ghana has already experienced this pain. Building additional infrastructure that depends on the same unreliable supply source compounds the risk without solving the fundamental problem. A diversified import solution (FSRU) is more resilient.</div>
+      <div class="sc-fb bad" id="sc8-coal">⚠️ <strong>Technology lock-in risk.</strong> Coal plants take 3–4 years to build, missing the 18-month window. They also create a 40-year carbon-intensive infrastructure commitment that conflicts with climate commitments and ESG financing constraints. Gas remains Ghana's best bridge fuel given its domestic resources.</div>
+    </div>
+  </div>
+
+  <div class="lesson-footer">
+    <div class="lf-info">Module 8 · 200 XP awarded on completion</div>
+    <button class="btn-next-mod" onclick="completeMod('m8','quiz')">Take the Final Assessment →</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ QUIZ ═══════════════ -->
+<div class="panel" id="panel-quiz">
+<div class="quiz-wrap">
+  <div id="quiz-active">
+    <div class="quiz-prog">
+      <div class="qp-top"><span class="qp-label" id="ql">Final Assessment · Q 1 of 20</span><span class="qp-score">Score: <span id="qscore">0</span>/<span id="qans">0</span></span></div>
+      <div class="qp-bar"><div class="qp-fill" id="qfill" style="width:5%"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-num" id="qnum">Question 1 of 20</div>
+      <div class="q-text" id="qtext">Loading...</div>
+      <div class="q-opts" id="qopts"></div>
+      <div class="q-exp" id="qexp"></div>
+    </div>
+    <div class="q-nav">
+      <button class="btn-qnext" id="btnNext" onclick="nextQ()" disabled>Next →</button>
+      <button class="btn-skip" onclick="skipQ()">Skip</button>
+    </div>
+  </div>
+  <div id="quiz-results" style="display:none">
+    <div class="results">
+      <div class="res-emoji" id="res-emoji">🏆</div>
+      <div class="res-score" id="res-score">0/20</div>
+      <div class="res-label" id="res-label">Assessment Complete</div>
+      <div class="res-stats">
+        <div class="rs"><div class="rs-v" id="rs-c" style="color:var(--gn)">0</div><div class="rs-l">Correct</div></div>
+        <div class="rs"><div class="rs-v" id="rs-w" style="color:var(--rd)">0</div><div class="rs-l">Wrong</div></div>
+        <div class="rs"><div class="rs-v" id="rs-xp" style="color:var(--gd)">0</div><div class="rs-l">XP Earned</div></div>
+      </div>
+      <div class="res-btns">
+        <button class="btn-hero primary" onclick="resetQuiz()">↺ Retry</button>
+        <button class="btn-hero ghost" onclick="go('home')">← Dashboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ GLOSSARY ═══════════════ -->
+<div class="panel" id="panel-glossary">
+<div class="gloss-wrap">
+  <div class="lesson-h1" style="margin-bottom:1rem">📖 Glossary of Terms</div>
+  <div class="gloss-search"><span>🔍</span><input type="text" placeholder="Search terms and definitions..." oninput="filterGloss(this.value)" id="gloss-input"></div>
+  <div class="gloss-grid" id="gloss-grid"></div>
+</div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /wrap -->
+
+<!-- ═══ AI TUTOR DRAWER ═══ -->
+<div id="ai-drawer">
+  <div class="ai-head">
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-head-text">
+      <div class="ai-head-name">LNG AI Tutor</div>
+    </div>
+    <button class="ai-close" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-ctx" id="ai-ctx">📚 Current topic: <span id="ai-topic">Natural Gas & LNG</span></div>
+  <div class="ai-msgs" id="ai-msgs">
+    <div class="ai-msg bot">Hello! I'm your LNG Academy tutor. I can explain any concept from the course in depth — liquefaction physics, pricing formulas, project structures, African gas markets, or anything else. What would you like to understand better?</div>
+  </div>
+  <div class="ai-suggestions" id="ai-sugs">
+    <span class="ai-sug" onclick="askAI('Explain the difference between associated and non-associated gas')">Associated vs non-associated gas</span>
+    <span class="ai-sug" onclick="askAI('How does the C3MR liquefaction process work step by step?')">How C3MR works</span>
+    <span class="ai-sug" onclick="askAI('What is a take-or-pay clause and why does it enable project finance?')">Take-or-pay explained</span>
+    <span class="ai-sug" onclick="askAI('Compare integrated, merchant and tolling LNG structures')">Compare LNG structures</span>
+    <span class="ai-sug" onclick="askAI('Why did global LNG markets oversupply in 2016-2020?')">2016 oversupply causes</span>
+    <span class="ai-sug" onclick="askAI('What is netback pricing and how do I calculate wellhead value?')">Netback calculation</span>
+  </div>
+  <div class="ai-input-row">
+    <textarea class="ai-input" id="ai-input" placeholder="Ask about any LNG concept..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI()}"></textarea>
+    <button class="ai-send" id="ai-send" onclick="sendAI()">➤</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><div class="toast-icon" id="toast-icon">⭐</div><div class="toast-text" id="toast-text"><strong>+50 XP</strong> · Great work!</div></div>
+
+<script>
+/* ═══════════════════════ STATE ═══════════════════════ */
+const S={xp:0,streak:0,done:new Set(),correct:0,answered:0,curPanel:'home',qCur:0,qScore:0,qAns:0,qFlags:[],qInit:false};
+
+/* ═══════════════════════ NAVIGATION ═══════════════════════ */
+function go(id){
+  document.querySelectorAll('.panel').forEach(p=>{p.classList.remove('active');p.style.display='none'});
+  const t=document.getElementById('panel-'+id);
+  if(!t){console.error('No panel:',id);return}
+  t.classList.add('active');t.style.display='block';t.scrollTop=0;
+  document.querySelectorAll('.sn').forEach(n=>n.classList.remove('active'));
+  const sn=document.querySelector(`.sn[data-panel="${id}"]`);
+  if(sn)sn.classList.add('active');
+  const titles={home:'Dashboard',m1:'Module 1: What is Natural Gas?',m2:'Module 2: Liquefaction Science',m3:'Module 3: LNG Value Chain',m4:'Module 4: Shipping & Carriers',m5:'Module 5: Pricing & Contracts',m6:'Module 6: Project Structures',m7:'Module 7: Government & Policy',m8:'Module 8: African Gas Markets',quiz:'Final Assessment',glossary:'Glossary'};
+  document.getElementById('tbTitle').textContent='LNG Academy — '+(titles[id]||id);
+  S.curPanel=id;
+  document.getElementById('ai-topic').textContent=titles[id]||'Natural Gas & LNG';
+  // Panel inits
+  if(id==='m2')setTimeout(()=>{initMolSim();updateMol()},120);
+  if(id==='m3')setTimeout(()=>{initChain();initPipeSim();updatePipe()},120);
+  if(id==='m4')setTimeout(()=>{initShipSim();updateShip()},120);
+  if(id==='m5')setTimeout(updatePrice,80);
+  if(id==='m8')setTimeout(()=>{initMarketSim();updateMarket()},120);
+  if(id==='quiz')setTimeout(()=>{if(!S.qInit)initQuiz()},80);
+  if(id==='glossary')setTimeout(renderGloss,80);
+  if(id==='m1')setTimeout(()=>{initCompSim();drawComp()},120);
+}
+
+/* ═══════════════════════ PROGRESS ═══════════════════════ */
+function updateProg(){
+  const n=S.done.size,pct=Math.round(n/8*100);
+  document.getElementById('spPct').textContent=pct+'%';
+  document.getElementById('spFill').style.width=pct+'%';
+  document.getElementById('xpVal').textContent=S.xp;
+  document.getElementById('strkVal').textContent=S.streak;
+  document.getElementById('modVal').textContent=n;
+  document.getElementById('tbXP').textContent=S.xp;
+  document.getElementById('tbStreak').textContent=S.streak;
+}
+function addXP(n,msg){
+  S.xp+=n;
+  showToast('⭐',`+${n} XP — ${msg}`);
+  updateProg();
+}
+function showToast(icon,msg){
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-text').innerHTML=msg.replace(/^\+\d+ XP — /,m=>`<strong>${m.slice(0,-3)}</strong> — `);
+  const t=document.getElementById('toast');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);
+}
+function completeMod(id,next){
+  if(!S.done.has(id)){
+    S.done.add(id);addXP(200,'Module completed! 🎓');
+    const b=document.getElementById(`sn-${id}`);
+    if(b){b.classList.add('done');const badge=b.querySelector('.sn-badge');if(badge)badge.textContent='✓'}
+  }
+  go(next);
+}
+
+/* ═══════════════════════ KNOWLEDGE CHECKS ═══════════════════════ */
+const kcDone={};
+function KC(id,btn,correct,exp){
+  if(kcDone[id])return;
+  kcDone[id]=true;
+  S.answered++;
+  const container=document.getElementById(id);
+  container.querySelectorAll('.kopt').forEach(b=>b.classList.add('locked'));
+  const fb=document.getElementById(id+'-fb');
+  if(correct){
+    btn.classList.add('correct');S.correct++;S.streak++;
+    addXP(50,'Correct! 🎯');
+    fb.innerHTML=exp;fb.className='kc-fb ok show';
+  }else{
+    btn.classList.add('wrong');S.streak=0;addXP(10,'Read the explanation below');
+    fb.innerHTML=exp;fb.className='kc-fb no show';
+    container.querySelectorAll('.kopt').forEach(b=>{const oc=b.getAttribute('onclick');if(oc&&oc.includes(',true,'))b.classList.add('show-right')});
+  }
+  updateProg();
+}
+
+/* ═══════════════════════ SCENARIOS ═══════════════════════ */
+const scDone={};
+function SC(id,choice){
+  if(scDone[id])return;
+  scDone[id]=true;
+  const good_map={sc1:'power',sc6:'toller',sc8:'fsru'};
+  const good=good_map[id]===choice;
+  document.getElementById(id+'-choices').querySelectorAll('.sc-choice').forEach(c=>{
+    c.style.pointerEvents='none';c.style.opacity='.6';
+  });
+  event.target.closest('.sc-choice').classList.add(good?'good':'bad');
+  event.target.closest('.sc-choice').style.opacity='1';
+  const fb=document.getElementById(`${id}-${choice}`);
+  if(fb)fb.classList.add('show');
+  addXP(good?75:20,good?'Great decision! 🏆':'Good reasoning — check the explanation');
+}
+
+/* ═════════════ SIM 1: GAS COMPOSITION ═════════════ */
+let compCtx;
+function initCompSim(){
+  const c=document.getElementById('c-comp');if(!c)return;
+  const r=c.parentElement.getBoundingClientRect();
+  c.width=r.width||700;c.height=Math.round(c.width*0.28);
+  compCtx=c.getContext('2d');
+  drawComp();
+}
+function drawComp(){
+  const c=document.getElementById('c-comp');if(!c||!compCtx)return;
+  const W=c.width,H=c.height;
+  compCtx.clearRect(0,0,W,H);
+  const ch4=parseInt(document.getElementById('sl-ch4').value);
+  const h2s=parseInt(document.getElementById('sl-h2s').value);
+  const co2=parseInt(document.getElementById('sl-co2').value);
+  const rest=Math.max(0,100-ch4-h2s-co2);
+  document.getElementById('v-ch4').textContent=ch4+'%';
+  document.getElementById('v-h2s').textContent=h2s+'%';
+  document.getElementById('v-co2').textContent=co2+'%';
+
+  // Bar chart
+  const segs=[{label:'CH₄ (Methane)',val:ch4,col:'#00D4F0'},{label:'C₂-C₄ NGL',val:rest,col:'#FF6320'},{label:'CO₂',val:co2,col:'#FFD060'},{label:'H₂S',val:h2s,col:'#FF3060'}];
+  const bH=32,bY=(H-bH)/2,pad=80,bW=W-pad*2;
+  let x=pad;
+  segs.forEach(s=>{
+    const sw=s.val/100*bW;
+    compCtx.fillStyle=s.col;compCtx.fillRect(x,bY,sw,bH);
+    if(sw>45){
+      compCtx.fillStyle='rgba(0,0,0,.7)';compCtx.font=`bold ${Math.min(12,sw/5)}px DM Sans,sans-serif`;
+      compCtx.textAlign='center';compCtx.fillText(s.label+' '+s.val+'%',x+sw/2,bY+bH/2+5);
+    }
+    x+=sw;
+  });
+  // Legend
+  compCtx.font='11px DM Sans,sans-serif';compCtx.textAlign='left';
+  let lx=pad;
+  segs.forEach(s=>{
+    compCtx.fillStyle=s.col;compCtx.fillRect(lx,bY+bH+10,10,10);
+    compCtx.fillStyle='#5A7A9A';compCtx.fillText(s.label,lx+14,bY+bH+20);
+    lx+=Math.max(100,s.label.length*7+30);
+  });
+
+  // Update metrics
+  const ngl=rest;
+  const quality=ch4>=80&&h2s<5&&co2<10?'Excellent':ch4>=70&&h2s<10&&co2<15?'Good':'Poor';
+  const sour=h2s===0?'Sweet':h2s<5?'Mild Sour':h2s<10?'Sour':'High Sour';
+  const treat=1+(h2s>0?1:0)+(co2>0?1:0)+(rest>5?1:0);
+  document.getElementById('sm-ngl').textContent=ngl+'%';
+  document.getElementById('sm-quality').textContent=quality;
+  document.getElementById('sm-quality').style.color=quality==='Excellent'?'var(--gn)':quality==='Good'?'var(--gd)':'var(--rd)';
+  document.getElementById('sm-sour').textContent=sour;
+  document.getElementById('sm-sour').style.color=h2s===0?'var(--gn)':h2s<5?'var(--gd)':'var(--rd)';
+  document.getElementById('sm-treat').textContent=treat+' Stages';
+  document.getElementById('si-comp').innerHTML=
+    h2s>8?'<strong style="color:var(--rd)">⚠️ High sour gas:</strong> Requires a dedicated amine acid gas removal unit upstream of all other processing. Sulphur recovery (Claus plant) converts H₂S to elemental sulphur for sale.':
+    co2>15?'<strong style="color:var(--gd)">ℹ️ High CO₂:</strong> Significant acid gas removal needed. If CO₂ is above ~8%, it will freeze out as dry ice in the liquefaction cold boxes and must be removed to below 50 ppm before liquefaction.':
+    ch4<65?'<strong style="color:var(--fl)">⚠️ Low methane content:</strong> High NGL content means significant liquid separation is required. NGLs must be stabilised and sold separately — but they represent valuable revenue.':
+    '<strong style="color:var(--gn)">✅ Good gas quality:</strong> High methane, manageable impurities. Standard processing train is sufficient. NGL extraction adds byproduct revenue.';
+}
+
+/* ═════════════ SIM 2: MOLECULE ═════════════ */
+let molCtx,mols=[],molAnim;
+function initMolSim(){
+  const c=document.getElementById('c-mol');if(!c)return;
+  if(molAnim)cancelAnimationFrame(molAnim);
+  const r=c.parentElement.getBoundingClientRect();
+  c.width=r.width||720;c.height=Math.round(c.width*0.3);
+  molCtx=c.getContext('2d');
+  mols=[];
+  for(let i=0;i<70;i++)mols.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4,r:3+Math.random()*3});
+  animMol();
+}
+function animMol(){
+  const c=document.getElementById('c-mol');if(!c||!molCtx)return;
+  const slEl=document.getElementById('sl-temp');if(!slEl)return;
+  const temp=parseInt(slEl.value);
+  const W=c.width,H=c.height;
+  const spd=Math.max(0.05,(temp+200)/200);
+  molCtx.clearRect(0,0,W,H);
+  // bg gradient
+  const bg=molCtx.createLinearGradient(0,0,W,0);
+  bg.addColorStop(0,'#060912');bg.addColorStop(1,'#0A0F1E');
+  molCtx.fillStyle=bg;molCtx.fillRect(0,0,W,H);
+
+  const hue=temp>-82?25:temp>-162?190:210;
+  const sat=temp>-82?85:55;const lum=temp>-82?58:42;
+
+  mols.forEach(m=>{
+    m.x+=m.vx*spd;m.y+=m.vy*spd;
+    if(m.x<m.r||m.x>W-m.r)m.vx*=-1;
+    if(m.y<m.r||m.y>H-m.r)m.vy*=-1;
+    if(temp<-100){
+      m.vx+=(W/2-m.x)*0.00008*(1-(spd/2));
+      m.vy+=(H/2-m.y)*0.00008*(1-(spd/2));
+    }
+    molCtx.beginPath();
+    molCtx.arc(m.x,m.y,m.r*(temp<-162?1.5:1),0,Math.PI*2);
+    molCtx.fillStyle=`hsla(${hue},${sat}%,${lum}%,0.85)`;
+    molCtx.fill();
+    if(temp>-82){
+      molCtx.strokeStyle=`hsla(${hue},${sat}%,${lum+20}%,0.2)`;
+      molCtx.lineWidth=1;molCtx.stroke();
+    }
+  });
+  // Phase label overlay
+  const phase=temp>-82?'GAS PHASE 🔴':temp>-162?'PRE-COOLING ❄️':'LNG LIQUID 🔵';
+  const pcol=temp>-82?'#FF6320':temp>-162?'#FFD060':'#00D4F0';
+  molCtx.fillStyle=pcol;molCtx.font='bold 13px DM Mono,monospace';molCtx.textAlign='left';
+  molCtx.fillText(phase,14,24);
+  molAnim=requestAnimationFrame(animMol);
+}
+function updateMol(){
+  const temp=parseInt(document.getElementById('sl-temp').value);
+  document.getElementById('v-temp').textContent=(temp>0?'+':'')+temp+'°C';
+  const vol=temp>-162?'1 / 1':'1 / 600';
+  document.getElementById('v-vol').textContent=vol;
+  const phase=temp>-82?'GAS':temp>-162?'COOLING':'LIQUID';
+  const el=document.getElementById('v-phase');
+  el.textContent=phase;
+  el.style.color=temp>-82?'var(--fl)':temp>-162?'var(--gd)':'var(--ic)';
+  document.getElementById('si-mol').innerHTML=
+    temp>-82?'At ambient temperature, methane molecules have high kinetic energy and are widely spaced. Gas phase — poor volumetric efficiency for transport.':
+    temp>-162?`Pre-cooling stage at ${temp}°C. The C3MR process uses propane refrigerant here. CO₂ must be removed before −60°C or it freezes solid.`:
+    '🎉 <strong>LNG achieved at −162°C.</strong> Molecules are tightly packed in liquid form. Volume is 1/600th of the gas phase. A standard carrier holds ~6 billion cubic feet equivalent. This is what makes transoceanic gas trade possible.';
+}
+
+/* ═════════════ SIM 3: CHAIN BUILDER ═════════════ */
+const CHAIN_ITEMS=[
+  {id:'explore',label:'🗺️ Exploration & Appraisal'},
+  {id:'prod',label:'⛽ Production'},
+  {id:'process',label:'🏭 Gas Processing'},
+  {id:'liq',label:'❄️ Liquefaction'},
+  {id:'ship',label:'🚢 LNG Shipping'},
+  {id:'regas',label:'🔥 Regasification'},
+  {id:'dist',label:'🔧 Distribution'},
+  {id:'market',label:'💡 End Market / Sales'},
+];
+const CORRECT_ORDER=['explore','prod','process','liq','ship','regas','dist','market'];
+let dropped=[];
+function initChain(){
+  dropped=[];
+  const dz=document.getElementById('dz');
+  if(!dz)return;
+  dz.innerHTML='<span class="dz-ph" id="dz-ph">Drop chain stages here in sequence →</span>';
+  dz.classList.remove('done','hl');
+  const cp=document.getElementById('cp');
+  if(!cp)return;
+  cp.innerHTML='';
+  document.getElementById('chain-msg').className='chain-msg';
+  document.getElementById('chain-status').textContent='';
+  const shuffled=[...CHAIN_ITEMS].sort(()=>Math.random()-.5);
+  shuffled.forEach(item=>{
+    const chip=document.createElement('div');
+    chip.className='chip';chip.dataset.id=item.id;chip.innerHTML=item.label;
+    chip.draggable=true;
+    chip.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',item.id));
+    chip.addEventListener('click',()=>addToChain(item.id,chip));
+    cp.appendChild(chip);
+  });
+}
+function dzOver(e){e.preventDefault();document.getElementById('dz').classList.add('hl')}
+function dzDrop(e){e.preventDefault();document.getElementById('dz').classList.remove('hl');const id=e.dataTransfer.getData('text/plain');const chip=document.querySelector(`.chip[data-id="${id}"]`);if(chip&&!chip.classList.contains('placed'))addToChain(id,chip)}
+function addToChain(id,chip){
+  if(dropped.includes(id))return;
+  dropped.push(id);chip.classList.add('placed');
+  const ph=document.getElementById('dz-ph');if(ph)ph.remove();
+  const item=CHAIN_ITEMS.find(i=>i.id===id);
+  const slot=document.createElement('div');
+  slot.className='slot';slot.dataset.id=id;
+  slot.innerHTML=item.label+' <span onclick="removeSlot(\''+id+'\')" style="opacity:.5;cursor:pointer;margin-left:2px">×</span>';
+  document.getElementById('dz').appendChild(slot);
+  if(dropped.length===CHAIN_ITEMS.length)document.getElementById('chain-status').textContent='All placed — click Check!';
+}
+function removeSlot(id){
+  dropped=dropped.filter(i=>i!==id);
+  document.querySelector(`.slot[data-id="${id}"]`)?.remove();
+  document.querySelector(`.chip[data-id="${id}"]`)?.classList.remove('placed');
+  document.getElementById('chain-status').textContent='';
+  if(document.getElementById('dz').querySelectorAll('.slot').length===0){
+    document.getElementById('dz').innerHTML='<span class="dz-ph" id="dz-ph">Drop chain stages here in sequence →</span>';
+  }
+}
+function checkChain(){
+  if(dropped.length<CHAIN_ITEMS.length){document.getElementById('chain-status').textContent='⚠️ Place all 8 stages first';return}
+  const ok=dropped.every((id,i)=>id===CORRECT_ORDER[i]);
+  const msg=document.getElementById('chain-msg');
+  if(ok){
+    document.getElementById('dz').classList.add('done');
+    msg.className='chain-msg ok show';
+    msg.innerHTML='🎉 <strong>Perfect!</strong> Correct order: Exploration → Production → Gas Processing → Liquefaction → Shipping → Regasification → Distribution → End Market. Each link must be operational before the next can function — this is the "weakest link" principle in practice.';
+    addXP(100,'Value chain mastered! 🔗');
+  }else{
+    msg.className='chain-msg no show';
+    msg.textContent='❌ Not quite right. Correct: '+CORRECT_ORDER.map(id=>CHAIN_ITEMS.find(i=>i.id===id).label).join(' → ')+'. Reset and try again!';
+    setTimeout(resetChain,4000);
+  }
+}
+function resetChain(){initChain()}
+
+/* ═════════════ SIM 4: PIPELINE ═════════════ */
+let pipeCtx,pipeParticles=[],pipeAnim;
+function initPipeSim(){
+  const c=document.getElementById('c-pipe');if(!c)return;
+  if(pipeAnim)cancelAnimationFrame(pipeAnim);
+  const r=c.parentElement.getBoundingClientRect();
+  c.width=r.width||720;c.height=Math.round(c.width*0.25);
+  pipeCtx=c.getContext('2d');
+  pipeParticles=[];
+  for(let i=0;i<35;i++)pipeParticles.push({x:Math.random()*c.width,y:c.height/2+(Math.random()-.5)*20,sp:1+Math.random()*.5});
+  animPipe();
+}
+function animPipe(){
+  const c=document.getElementById('c-pipe');if(!c||!pipeCtx)return;
+  const presEl=document.getElementById('sl-pres');if(!presEl)return;
+  const pres=parseInt(presEl.value);
+  const diam=parseInt(document.getElementById('sl-diam').value);
+  const spd=(pres/60)*(diam/3)*1.8;
+  const W=c.width,H=c.height;
+  pipeCtx.clearRect(0,0,W,H);
+  pipeCtx.fillStyle='#060912';pipeCtx.fillRect(0,0,W,H);
+  const pH=28+diam*14,pY=H/2-pH/2;
+  const g=pipeCtx.createLinearGradient(0,pY,0,pY+pH);
+  g.addColorStop(0,'#1C2B40');g.addColorStop(.35,'#253650');g.addColorStop(.65,'#1C2B40');g.addColorStop(1,'#111827');
+  pipeCtx.fillStyle=g;pipeCtx.fillRect(0,pY,W,pH);
+  // Flanges
+  for(let fx=120;fx<W;fx+=160){
+    pipeCtx.fillStyle='#253650';pipeCtx.fillRect(fx,pY-6,16,pH+12);
+    pipeCtx.fillStyle='#3A5A7A';pipeCtx.fillRect(fx+3,pY-4,10,pH+8);
+  }
+  pipeCtx.fillStyle='rgba(255,255,255,.03)';pipeCtx.fillRect(0,pY+3,W,5);
+  // Particles
+  pipeParticles.forEach(p=>{
+    p.x+=p.sp*spd;if(p.x>W+5)p.x=-5;
+    p.y=H/2+(Math.random()-.5)*(pH*.4);
+    pipeCtx.beginPath();pipeCtx.ellipse(p.x,p.y,4,1.8,0,0,Math.PI*2);
+    pipeCtx.fillStyle=`rgba(${pres>80?'255,144,66':'0,212,240'},${.3+Math.random()*.4})`;
+    pipeCtx.fill();
+  });
+  pipeCtx.fillStyle='rgba(91,122,153,.7)';pipeCtx.font='11px DM Mono,monospace';pipeCtx.textAlign='left';
+  pipeCtx.fillText(`← GAS FLOW  ${pres} BAR  ${['','12"','16"','20"','24"','30"'][diam]} PIPE →`,16,pY-10);
+  pipeAnim=requestAnimationFrame(animPipe);
+}
+function updatePipe(){
+  const pres=parseInt(document.getElementById('sl-pres').value);
+  const diam=parseInt(document.getElementById('sl-diam').value);
+  const len=parseInt(document.getElementById('sl-len').value);
+  const diamLabels=['','12" (305mm)','16" (406mm)','20" (508mm)','24" (610mm)','30" (762mm)'];
+  document.getElementById('v-pres').textContent=pres+' bar';
+  document.getElementById('v-diam').textContent=diamLabels[diam]||diam+'"';
+  document.getElementById('v-len').textContent=len+' km';
+  const flow=Math.round(pres*diam*4.2);
+  const vel=(pres*.17).toFixed(1);
+  const drop=Math.round(len*.06*(5/diam)*(pres<50?1.4:1));
+  const comp=Math.max(0,Math.ceil((drop-20)/25));
+  document.getElementById('sm-flow').textContent=flow;
+  document.getElementById('sm-vel').textContent=vel;
+  document.getElementById('sm-drop').textContent=drop;
+  document.getElementById('sm-comp').textContent=comp;
+  document.getElementById('si-pipe').innerHTML=
+    comp>4?'<strong style="color:var(--rd)">⚠️ Many compressor stations needed:</strong> High pressure drop over this distance requires frequent re-compression. Consider a larger diameter pipe to reduce friction losses.':
+    pres<30?'<strong style="color:var(--gd)">ℹ️ Low pressure:</strong> Flow rates are limited. Inlet pressure is the primary driver of throughput — higher pressure = more gas moved per unit time.':
+    '<strong style="color:var(--gn)">✅ Efficient configuration:</strong> Good pressure/diameter balance for this pipeline length. '+comp+' compressor station'+(comp!==1?'s':'')+' needed to maintain delivery pressure.';
+}
+
+/* ═════════════ SIM 5: SHIP ═════════════ */
+let shipCtx;
+function initShipSim(){
+  const c=document.getElementById('c-ship');if(!c)return;
+  const r=c.parentElement.getBoundingClientRect();
+  c.width=r.width||720;c.height=Math.round(c.width*0.27);
+  shipCtx=c.getContext('2d');
+  drawShip();
+}
+function drawShip(){
+  const c=document.getElementById('c-ship');if(!c||!shipCtx)return;
+  const W=c.width,H=c.height;
+  const carriers={standard:{cap:125000,cost:160,len:.55},modern:{cap:174000,cost:200,len:.68},qflex:{cap:216000,cost:225,len:.8},qmax:{cap:266000,cost:245,len:.95}};
+  const type=document.getElementById('sl-carrier')?.value||'modern';
+  const car=carriers[type];
+  shipCtx.clearRect(0,0,W,H);
+  shipCtx.fillStyle='#060912';shipCtx.fillRect(0,0,W,H);
+  // Sea
+  for(let i=0;i<3;i++){
+    const wy=H*.65+i*10;
+    shipCtx.beginPath();shipCtx.moveTo(0,wy);
+    for(let x=0;x<W;x+=30)shipCtx.lineTo(x,wy+(Math.sin(x*.08+i))*4);
+    shipCtx.strokeStyle=`rgba(0,212,240,${.1+i*.05})`;shipCtx.lineWidth=2;shipCtx.stroke();
+  }
+  // Ship hull
+  const sW=car.len*W,sX=(W-sW)/2,sY=H*.35,sH=H*.28;
+  const hg=shipCtx.createLinearGradient(sX,sY,sX,sY+sH);
+  hg.addColorStop(0,'#253650');hg.addColorStop(.5,'#1C2B40');hg.addColorStop(1,'#111827');
+  shipCtx.fillStyle=hg;
+  shipCtx.beginPath();shipCtx.moveTo(sX,sY);shipCtx.lineTo(sX+sW*.06,sY+sH);
+  shipCtx.lineTo(sX+sW*.94,sY+sH);shipCtx.lineTo(sX+sW,sY);shipCtx.closePath();
+  shipCtx.fill();shipCtx.strokeStyle='#3A5A7A';shipCtx.lineWidth=1;shipCtx.stroke();
+  // Tanks (Moss spheres or membrane rectangles)
+  const nTanks=type==='qmax'?5:type==='qflex'?4:3;
+  for(let i=0;i<nTanks;i++){
+    const tx=sX+sW*.1+i*(sW*.8/nTanks);const ty=sY-H*.12;const tr=H*.1;
+    const tg=shipCtx.createRadialGradient(tx+tr*.3,ty+tr*.3,tr*.1,tx,ty,tr);
+    tg.addColorStop(0,'#4A7AAA');tg.addColorStop(1,'#1C2B40');
+    shipCtx.beginPath();shipCtx.arc(tx+tr,ty+tr,tr,0,Math.PI*2);
+    shipCtx.fillStyle=tg;shipCtx.fill();
+    shipCtx.strokeStyle='#5A8AAA';shipCtx.lineWidth=1;shipCtx.stroke();
+    // LNG glow
+    shipCtx.beginPath();shipCtx.arc(tx+tr,ty+tr,tr*.6,0,Math.PI*2);
+    shipCtx.fillStyle='rgba(0,212,240,.07)';shipCtx.fill();
+  }
+  // Labels
+  shipCtx.fillStyle='#D4E4F4';shipCtx.font='bold 13px DM Mono,monospace';shipCtx.textAlign='center';
+  shipCtx.fillText(`${type.toUpperCase()} CLASS — ${car.cap.toLocaleString()} m³`,W/2,H*.94);
+  shipCtx.fillStyle='#5A7A9A';shipCtx.font='11px DM Mono,monospace';
+  shipCtx.fillText(`Est. newbuild cost: ~$${car.cost}M USD`,W/2,H*.98+8);
+}
+function updateShip(){
+  drawShip();
+  const carriers={standard:{cap:125000,mmcf:4.4},modern:{cap:174000,mmcf:6.1},qflex:{cap:216000,mmcf:7.6},qmax:{cap:266000,mmcf:9.4}};
+  const type=document.getElementById('sl-carrier')?.value||'modern';
+  const car=carriers[type];
+  const voyage=parseInt(document.getElementById('sl-voyage')?.value||6000);
+  const charter=parseInt(document.getElementById('sl-charter')?.value||75000);
+  document.getElementById('v-voyage').textContent=voyage.toLocaleString()+' nm';
+  document.getElementById('v-charter').textContent='$'+charter.toLocaleString()+'/day';
+  const days=Math.round(voyage/420);
+  const voyageCost=charter*days;
+  const mmcf=car.mmcf*1000;// MMBtu approx
+  const frPerMMBtu=(voyageCost/mmcf/1000).toFixed(2);
+  document.getElementById('sm-cargo').textContent=(car.mmcf).toFixed(1)+'B';
+  document.getElementById('sm-voydays').textContent=days;
+  document.getElementById('sm-voy$').textContent='$'+(voyageCost/1000000).toFixed(1)+'M';
+  document.getElementById('sm-$/mmbtu').textContent='$'+frPerMMBtu;
+  const breakeven=charter>100000;
+  document.getElementById('si-ship').innerHTML=
+    breakeven?'<strong style="color:var(--rd)">⚠️ Charter rate above newbuild breakeven:</strong> A new carrier costing $200–250M needs $80,000–$100,000/day to cover capital + operating costs. Rates above this level are profitable for shipowners.':
+    charter<40000?'<strong style="color:var(--gd)">📉 Low spot rate:</strong> This reflects the oversupplied shipping market of 2016–2018. Ships with long-term charters were competing against spot charters offered at a fraction of breakeven — some owners were accepting any cargo just to cover operating costs.':
+    `Freight cost of <strong>$${frPerMMBtu}/MMBtu</strong> over ${voyage.toLocaleString()} nm. Larger carriers spread charter costs across more cargo volume, reducing freight cost per unit.`;
+}
+
+/* ═════════════ SIM 6: PRICING ═════════════ */
+function updatePrice(){
+  const jcc=parseInt(document.getElementById('sl-jcc')?.value||72);
+  const slope=parseFloat(document.getElementById('sl-slope')?.value||13.5)/100;
+  const beta=parseFloat(document.getElementById('sl-beta')?.value||0.5);
+  const liqc=parseFloat(document.getElementById('sl-liqc')?.value||2.8);
+  const shipc=parseFloat(document.getElementById('sl-ship')?.value||1.2);
+  document.getElementById('v-jcc').textContent='$'+jcc+'/bbl';
+  document.getElementById('v-slope').textContent=(slope*100).toFixed(1)+'%';
+  document.getElementById('v-beta').textContent='$'+beta.toFixed(1);
+  document.getElementById('v-liqc').textContent='$'+liqc.toFixed(1);
+  document.getElementById('v-ship').textContent='$'+shipc.toFixed(2);
+  const oil=slope*jcc;
+  let fob=oil+beta;
+  let scurve='within normal range';
+  if(fob>18){fob=18;scurve='⚠️ Ceiling (S-Curve) HIT — buyer protection capped price at $18/MMBtu'}
+  if(fob<4){fob=4;scurve='⚠️ Floor (S-Curve) HIT — seller protection floored price at $4/MMBtu'}
+  const netback=fob-liqc-shipc-0.35-0.25;
+  document.getElementById('pr-main').textContent='$'+fob.toFixed(2);
+  document.getElementById('pr-main').style.color=netback<0?'var(--rd)':'var(--gd)';
+  document.getElementById('pb-oil').textContent='$'+oil.toFixed(2);
+  document.getElementById('pb-beta').textContent=(beta>=0?'+':'')+'$'+beta.toFixed(2);
+  document.getElementById('pb-fob').textContent='$'+fob.toFixed(2);
+  document.getElementById('pb-ship').textContent='–$'+shipc.toFixed(2);
+  document.getElementById('pb-liqc').textContent='–$'+liqc.toFixed(2);
+  const nbEl=document.getElementById('pb-nb');
+  nbEl.className='pb total'+(netback<0?' warn':'');
+  nbEl.querySelector('.v').textContent=(netback<0?'–$'+Math.abs(netback).toFixed(2)+' ⚠️ Uneconomic':'$'+netback.toFixed(2));
+  document.getElementById('pr-scurve').textContent='S-Curve: '+scurve;
+}
+
+/* ═════════════ SIM 7: MARKET ═════════════ */
+let marketCtx;
+function initMarketSim(){
+  const c=document.getElementById('c-market');if(!c)return;
+  const r=c.parentElement.getBoundingClientRect();
+  c.width=r.width||720;c.height=Math.round(c.width*0.27);
+  marketCtx=c.getContext('2d');
+  drawMarket();
+}
+function drawMarket(){
+  const c=document.getElementById('c-market');if(!c||!marketCtx)return;
+  const W=c.width,H=c.height;
+  marketCtx.clearRect(0,0,W,H);
+  marketCtx.fillStyle='#060912';marketCtx.fillRect(0,0,W,H);
+  const dom=parseFloat(document.getElementById('sl-dom')?.value||1.5);
+  const imp=parseFloat(document.getElementById('sl-imp')?.value||2);
+  const pwr=parseFloat(document.getElementById('sl-pwr')?.value||5);
+  const impBcf=imp*0.365/365*1000;// rough MTPA to BCF/d
+  const totalSup=dom+impBcf;
+  const pwrDem=pwr*0.5;
+  const gap=totalSup-pwrDem;
+  const maxV=Math.max(totalSup,pwrDem,8)*1.2;
+  const bW=80,gap2=40,startX=W*.15;
+  const bars=[
+    {label:'Domestic Gas',val:dom,col:'#FFD060'},
+    {label:'LNG Imports',val:impBcf,col:'#00D4F0'},
+    {label:'Power Demand',val:pwrDem,col:'#FF6320'},
+  ];
+  bars.forEach((b,i)=>{
+    const bH=Math.max(2,b.val/maxV*(H*.7));
+    const bX=startX+i*(bW+gap2);const bY=H*.85-bH;
+    const bg=marketCtx.createLinearGradient(bX,bY,bX,bY+bH);
+    bg.addColorStop(0,b.col);bg.addColorStop(1,b.col+'40');
+    marketCtx.fillStyle=bg;marketCtx.fillRect(bX,bY,bW,bH);
+    marketCtx.fillStyle='#D4E4F4';marketCtx.font='bold 11px DM Mono,monospace';marketCtx.textAlign='center';
+    marketCtx.fillText(b.val.toFixed(1)+' BCF/d',bX+bW/2,bY-6);
+    marketCtx.fillStyle='#5A7A9A';marketCtx.font='10px DM Sans,sans-serif';
+    marketCtx.fillText(b.label,bX+bW/2,H*.92);
+  });
+  // Gap line
+  const supX=startX+bW/2+bW+gap2/2;
+  const supH=(totalSup/maxV)*(H*.7);const supY=H*.85-supH;
+  marketCtx.setLineDash([5,3]);
+  marketCtx.beginPath();marketCtx.moveTo(startX,supY);marketCtx.lineTo(startX+(bW+gap2)*2,supY);
+  marketCtx.strokeStyle=gap>=-0.05?'#20C05A':'#FF3060';marketCtx.lineWidth=2;marketCtx.stroke();
+  marketCtx.setLineDash([]);
+  marketCtx.fillStyle=gap>=-0.05?'#20C05A':'#FF3060';marketCtx.font='bold 11px DM Mono,monospace';marketCtx.textAlign='left';
+  marketCtx.fillText(gap>=-0.05?'✅ Surplus: '+(gap).toFixed(1)+' BCF/d':'⚠️ Deficit: '+(Math.abs(gap)).toFixed(1)+' BCF/d',startX+(bW+gap2)*2+10,supY+4);
+  // Map outline (stylised)
+  marketCtx.strokeStyle='rgba(255,99,32,.15)';marketCtx.lineWidth=1;
+  const mapX=W*.65,mapY=H*.08,mapW=W*.3,mapH=H*.75;
+  marketCtx.strokeRect(mapX,mapY,mapW,mapH);
+  marketCtx.fillStyle='rgba(255,99,32,.06)';marketCtx.fillRect(mapX,mapY,mapW,mapH);
+  marketCtx.fillStyle='#5A7A9A';marketCtx.font='10px DM Sans,sans-serif';marketCtx.textAlign='center';
+  marketCtx.fillText('Sub-Saharan Africa',mapX+mapW/2,mapY+mapH/2);
+  // Dots for nations
+  const dots=[{x:.68,y:.25,l:'Nigeria',c:'#FFD060'},{x:.75,y:.45,l:'Ghana',c:'#FF6320'},{x:.82,y:.65,l:'Tanzania',c:'#00D4F0'},{x:.78,y:.72,l:'Moz.',c:'#20C05A'}];
+  dots.forEach(d=>{
+    const dx=W*d.x,dy=H*d.y;
+    marketCtx.beginPath();marketCtx.arc(dx,dy,5,0,Math.PI*2);
+    marketCtx.fillStyle=d.c;marketCtx.fill();
+    marketCtx.fillStyle='#D4E4F4';marketCtx.font='9px DM Sans,sans-serif';marketCtx.textAlign='left';
+    marketCtx.fillText(d.l,dx+8,dy+3);
+  });
+  // Update metrics
+  document.getElementById('sm-supply').textContent=totalSup.toFixed(1);
+  document.getElementById('sm-supply').style.color='var(--gn)';
+  document.getElementById('sm-demand').textContent=pwrDem.toFixed(1);
+  document.getElementById('sm-demand').style.color='var(--fl)';
+  document.getElementById('sm-gap').textContent=(gap>=0?'+':'')+gap.toFixed(1);
+  document.getElementById('sm-gap').style.color=gap>=-0.05?'var(--gn)':'var(--rd)';
+  document.getElementById('sm-elect').textContent=Math.min(pwr,totalSup/0.5).toFixed(1);
+  document.getElementById('si-market').innerHTML=
+    gap<-0.5?'<strong style="color:var(--rd)">⚠️ Supply shortfall:</strong> Increase domestic production or import more LNG to close the gap. Power plants will run below capacity.':
+    gap>2?'<strong style="color:var(--gd)">ℹ️ Supply surplus:</strong> Excess gas can serve industrial users, residential distribution, or support increased power exports to neighbouring countries.':
+    '<strong style="color:var(--gn)">✅ Approximate balance:</strong> Supply meets power demand. Each additional GW of gas-fired generation requires approximately 0.5 BCF/day of additional gas supply.';
+}
+function updateMarket(){
+  document.getElementById('v-dom').textContent=parseFloat(document.getElementById('sl-dom').value).toFixed(1)+' BCF/d';
+  document.getElementById('v-imp').textContent=parseFloat(document.getElementById('sl-imp').value).toFixed(1)+' MTPA';
+  document.getElementById('v-pwr').textContent=document.getElementById('sl-pwr').value+' GW';
+  drawMarket();
+}
+
+/* ═════════════ QUIZ ═════════════ */
+const Qs=[
+  {q:"At atmospheric pressure, methane liquefies at approximately:",opts:["−82°C","−120°C","−162°C","−200°C"],c:2,e:"Methane's boiling point is −161.5°C at 1 atm. LNG plants target −162°C, just below this point, to maintain liquid state at atmospheric pressure. This temperature is maintained throughout storage and shipping."},
+  {q:"LNG occupies approximately what fraction of its volume as gas?",opts:["1/10th","1/60th","1/200th","1/600th"],c:3,e:"LNG is 1/600th the volume of natural gas in its gaseous state. This 600:1 ratio makes transoceanic gas transport economical — a single Q-Max carrier holds the equivalent of 9.4 billion cubic feet of gas."},
+  {q:"Which stage of the LNG value chain is typically the most capital-intensive?",opts:["Exploration & Production","Gas Processing","Liquefaction","Regasification"],c:2,e:"Liquefaction is the most expensive link — a world-scale onshore plant costs $10–30+ billion. The cryogenic equipment, refrigerant compressors, multiple trains, and utility systems account for this cost concentration."},
+  {q:"In an oil-indexed LNG SPA with α=0.135 and β=0.50, what is the price when JCC = $80/bbl?",opts:["$10.30/MMBtu","$11.30/MMBtu","$12.50/MMBtu","$9.80/MMBtu"],c:1,e:"P = 0.135 × 80 + 0.50 = 10.80 + 0.50 = $11.30/MMBtu. The formula P = α × JCC + β is the foundation of Asian LNG pricing. The slope (α) is the most commercially negotiated variable."},
+  {q:"A take-or-pay clause in an LNG SPA means the buyer:",opts:["May take delivery at any price agreed on the day","Must pay for minimum contracted volume even if they don't lift the cargo","Takes physical delivery only if the price is favourable","Or the seller can pay a penalty for non-delivery"],c:1,e:"Take-or-pay requires the buyer to pay for the minimum contracted quantity (typically 80–90% of ACQ) whether or not they take physical delivery. This contractual cash flow guarantee is what makes billion-dollar project finance possible."},
+  {q:"FLNG stands for:",opts:["Fixed LNG — land-based plant built on reclaimed coastal land","Floating LNG — a vessel that liquefies gas offshore","Fast LNG — accelerated construction modular plant","Federal LNG — US government-owned liquefaction facility"],c:1,e:"FLNG is a floating vessel moored over an offshore gas field that processes, liquefies, stores, and offloads LNG. It eliminates the need for a subsea pipeline to shore. Shell's Prelude FLNG and Cameroon's Hilli Episeyo are operational examples."},
+  {q:"In a Tolling LNG structure, who bears commodity price risk?",opts:["The LNG plant company — they sell LNG at market prices","The project lenders — their debt is tied to LNG revenue","The tolling customer (gas owner) — they retain title throughout","The host government — royalties fall with prices"],c:2,e:"In tolling, the LNG plant is purely a service provider earning fixed monthly tariffs and variable cargo charges. It never takes title to the gas or LNG. The tolling customer owns the gas/LNG at all times and bears all commodity price exposure."},
+  {q:"The West Africa Gas Pipeline (WAGP) repeatedly under-delivered gas to Ghana, Benin, and Togo primarily because:",opts:["The subsea pipeline corroded faster than expected","Upstream Nigerian gas supply was disrupted by militancy and commercial disputes","Ghana's power demand was insufficient to absorb the committed volumes","Environmental permits for the compressor stations were not obtained"],c:1,e:"The WAGP pipeline infrastructure functioned as designed. The upstream Nigerian gas supply — delivered via the Escravos-Lagos Pipeline System — was chronically disrupted by Niger Delta militancy, oil field operational issues, and gas supply payment disputes. A classic weakest-link failure."},
+  {q:"A DSO (Domestic Supply Obligation) set at 30% means:",opts:["30% of gas revenues are paid to the government as royalty","30% of all gas produced must be sold to domestic customers before the remainder can be exported","30% of LNG cargo slots must be offered to domestic buyers at spot prices","30% of the LNG plant must be owned by the national oil company"],c:1,e:"A DSO is a regulatory instrument requiring producers to allocate a minimum percentage of gas output to domestic consumption before exporting. It is a policy tool to ensure citizens benefit from their country's gas resources. The percentage and pricing mechanism both matter for investment outcomes."},
+  {q:"Mercury removal is required before LNG liquefaction because:",opts:["Mercury raises the freezing point of methane above −162°C","Mercury corrodes aluminium heat exchangers in the liquefaction cold boxes","Mercury levels above 50 ppb are illegal in all LNG export regulations","Mercury causes pipeline embrittlement in the gas transmission system"],c:1,e:"Even parts-per-billion concentrations of mercury attack the aluminium cryogenic heat exchangers (cold boxes) central to all main liquefaction processes. This causes metal embrittlement and catastrophic equipment failure. Mercury removal beds (activated carbon or sulphur-impregnated media) are mandatory."},
+  {q:"Approximately how many proven TCF of gas reserves are needed to underpin a single 5 MTPA LNG train for 20 years?",opts:["~2 TCF","~4 TCF","~8 TCF","~15 TCF"],c:2,e:"The industry rule of thumb is ~8 TCF of proven reserves for a 5 MTPA train over 20 years of plateau production. The volume must support not just the contracted LNG but also domestic obligations, field decline, and a buffer for reserve uncertainty."},
+  {q:"What is the primary advantage of a Merchant LNG structure over an Integrated structure?",opts:["The LNG plant is more efficient when upstream and downstream are the same entity","Multiple upstream sources from different concessions can be aggregated, and non-upstream investors (including the government NOC) can hold plant equity","The gas transfer price is automatically set at fair market value without negotiation","Tolling customers take all commodity risk, protecting the plant's revenue"],c:1,e:"Merchant structures allow a separate LNG plant company to aggregate gas from multiple upstream concessions — each with different ownership — and sell LNG under its own SPAs. This enables government NOC equity in the plant separate from upstream stakes, and allows financial investors to participate in the downstream without upstream exposure."},
+  {q:"Q-Max LNG carriers cannot transit the Panama Canal because:",opts:["Qatari LNG is subject to trade sanctions restricting Canal access","Their beam (width) exceeds the physical dimensions of the Canal locks","The Panama Canal authority prohibits LNG cargoes for safety reasons","The voyage distance makes Canal transit commercially uneconomical"],c:1,e:"Q-Max vessels have a beam of approximately 53 metres and draught of 12 metres — exceeding the New Panama Canal locks (maximum 49m beam). Q-Max carriers were specifically designed for the direct Qatar-to-Asia route and were never intended for Canal transit."},
+  {q:"An FSRU differs from a conventional LNG import terminal in that:",opts:["It stores gas underground rather than in above-ground tanks","It is a vessel that can store LNG and regasify it onboard, deployable in 12–18 months vs 4–5 years for an onshore terminal","It uses a different chemical process to convert LNG back to gas","It is exclusively used for LNG export, not import"],c:1,e:"An FSRU is a floating vessel (converted or purpose-built) that stores LNG and regasifies it onboard, sending pipeline gas ashore via a flexible riser or jetty connection. The key advantages: faster deployment, lower capital cost, and relocatability — making it the preferred first-LNG-import solution for emerging markets."},
+  {q:"In the LNG project development sequence, FEED stands for:",opts:["Final Equipment Engineering Document","Front End Engineering Design","Feasibility Evaluation and Economic Determination","Field Engineering and Environmental Due Diligence"],c:1,e:"FEED (Front End Engineering Design) is the detailed engineering phase preceding FID. It takes 12–18 months and costs $40–80M. FEED produces the technical package used for EPC contractor bidding and reduces cost estimate uncertainty to ±15–25%."},
+  {q:"Mozambique and Tanzania together have discovered approximately how much offshore natural gas?",opts:["~25 TCF","~80 TCF","~250 TCF","~500 TCF"],c:2,e:"Mozambique's Rovuma Basin holds 200+ TCF and Tanzania has 57+ TCF offshore — together over 250 TCF. These are among the largest gas discoveries of the 21st century, sufficient to transform both countries' economies if developed effectively."},
+  {q:"A price re-opener clause in a long-term LNG SPA allows:",opts:["The seller to redirect cargoes to alternative buyers at any time","Either party to request price renegotiation if market conditions have changed materially, typically every 3–5 years","The buyer to cancel the contract if the LNG price exceeds 120% of spot","Automatic quarterly price adjustments linked to oil price movements"],c:1,e:"Price re-openers allow either party to trigger renegotiation if \"material\" market changes have occurred (a contested concept in itself). The 2014–2016 oil price collapse triggered widespread re-opener discussions as long-term oil-indexed contracts priced far above collapsed spot rates."},
+  {q:"Boil-Off Gas (BOG) on an LNG carrier refers to:",opts:["Gas vented from safety pressure relief valves during rough seas","LNG that naturally vaporises during the voyage — used as ship fuel in modern vessels","The gas burned during liquefaction train startup commissioning","CO₂ separated from the LNG during the regasification process"],c:1,e:"A small percentage of LNG (typically 0.05–0.15%/day) naturally vaporises due to heat ingress through insulation. Modern LNG carriers are designed to use this Boil-Off Gas as fuel for propulsion engines (or re-liquefied), simultaneously managing BOG and reducing bunker fuel costs."},
+  {q:"A gas aggregator's key credit risk in the domestic gas value chain is:",opts:["That the upstream gas field will produce below expected volumes","That it must pay upstream producers even if downstream customers delay payment","That the regasification terminal will be offline when gas is needed","That international LNG prices will fall below domestic contract prices"],c:1,e:"The aggregator sits between producers (who must be paid monthly) and potentially thousands of downstream customers (who may pay late or not at all). The aggregator's obligation to pay upstream continues regardless of downstream collection — creating a 'credit squeeze' risk that requires strong balance sheet management or back-to-back payment securitisation."},
+  {q:"For a country with a large gas discovery but no domestic gas market, the standard recommended sequence of development priorities is:",opts:["LNG export first, then domestic market from export revenues","Domestic power generation first (anchor customer), then industrial gas users, then LNG export planning in parallel","Full domestic market development before any LNG export discussions","Petrochemicals and fertiliser plants first due to highest gas value-add"],c:1,e:"Gas Master Plans consistently recommend power generation as the first domestic priority: it has the largest creditworthy buyer (the utility), the highest population benefit, and the infrastructure that enables all other economic activity. Industrial gas users follow. LNG export development runs in parallel but requires larger reserve bases and longer timelines to achieve FID."},
+];
+
+let qI=0,qSc=0,qAns=0,qFlags=[];
+function initQuiz(){
+  S.qInit=true;qI=0;qSc=0;qAns=0;qFlags=new Array(Qs.length).fill(false);
+  document.getElementById('quiz-active').style.display='block';
+  document.getElementById('quiz-results').style.display='none';
+  document.getElementById('btnNext').disabled=true;
+  loadQ();
+}
+function resetQuiz(){S.qInit=false;initQuiz()}
+function loadQ(){
+  const q=Qs[qI];
+  document.getElementById('qnum').textContent=`Question ${qI+1} of ${Qs.length}`;
+  document.getElementById('ql').textContent=`Final Assessment · Q ${qI+1} of ${Qs.length}`;
+  document.getElementById('qfill').style.width=((qI+1)/Qs.length*100)+'%';
+  document.getElementById('qscore').textContent=qSc;
+  document.getElementById('qans').textContent=qAns;
+  document.getElementById('qtext').textContent=q.q;
+  document.getElementById('qexp').className='q-exp';
+  document.getElementById('btnNext').disabled=true;
+  const opts=document.getElementById('qopts');opts.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const btn=document.createElement('button');
+    btn.className='qo';btn.onclick=()=>selectQ(i,btn);
+    btn.innerHTML=`<span class="qol">${l}</span>${q.opts[i]}`;
+    opts.appendChild(btn);
+  });
+}
+function selectQ(idx,btn){
+  if(qFlags[qI])return;qFlags[qI]=true;qAns++;
+  const q=Qs[qI];
+  document.querySelectorAll('.qo').forEach(b=>{b.disabled=true;b.onclick=null});
+  const exp=document.getElementById('qexp');
+  if(idx===q.c){btn.classList.add('qc');qSc++;S.streak++;addXP(25,'Correct! 🎯');exp.innerHTML=q.e;exp.className='q-exp ok show';}
+  else{btn.classList.add('qw');S.streak=0;addXP(5,'Read the explanation');document.querySelectorAll('.qo')[q.c].classList.add('qr');exp.innerHTML=q.e;exp.className='q-exp no show';}
+  document.getElementById('qscore').textContent=qSc;document.getElementById('qans').textContent=qAns;
+  document.getElementById('btnNext').disabled=false;
+}
+function nextQ(){if(qI>=Qs.length-1)showResults();else{qI++;loadQ()}}
+function skipQ(){if(qI>=Qs.length-1)showResults();else{qI++;loadQ()}}
+function showResults(){
+  document.getElementById('quiz-active').style.display='none';
+  document.getElementById('quiz-results').style.display='block';
+  const pct=Math.round(qSc/Qs.length*100);
+  const emojis=['😔','😐','🙂','😊','🌟','🏆'];
+  document.getElementById('res-emoji').textContent=emojis[Math.min(5,Math.floor(pct/20))];
+  document.getElementById('res-score').textContent=qSc+'/'+Qs.length;
+  const msgs=['Review the modules carefully and try again.','Good effort — revisit sections where you missed questions.','Decent score — a bit more study will help.','Good understanding of LNG fundamentals.','Excellent grasp of gas and LNG concepts!','Perfect score — expert-level knowledge! 🏆'];
+  document.getElementById('res-label').textContent=msgs[Math.min(5,Math.floor(pct/20))];
+  document.getElementById('rs-c').textContent=qSc;document.getElementById('rs-w').textContent=Qs.length-qSc;
+  const xpE=qSc*25+(pct===100?300:0);document.getElementById('rs-xp').textContent='+'+xpE;
+  addXP(xpE,'Assessment complete!');
+}
+
+/* ═════════════ GLOSSARY ═════════════ */
+const GLOSSARY=[
+  {t:'LNG',d:'Liquefied Natural Gas — methane cooled to −162°C, reducing volume to 1/600th of gaseous form for economical long-distance maritime transport.'},
+  {t:'Associated Gas',d:'Natural gas produced alongside crude oil in the same reservoir. Historically flared in Africa when no market or infrastructure existed to capture it.'},
+  {t:'Non-Associated Gas',d:'Gas from reservoirs where it is the primary product, with no significant crude oil. Qatar, Mozambique, and Tanzania\'s major discoveries are non-associated gas.'},
+  {t:'NGL (Natural Gas Liquids)',d:'Heavier hydrocarbons (ethane, propane, butane) separated from the gas stream during processing. Valuable as LPG, petrochemical feedstock, and condensate blending.'},
+  {t:'MTPA',d:'Million Tonnes Per Annum — standard LNG capacity unit. 1 MTPA ≈ 4.82 mmscfd gas equivalent ≈ 148 million MMBtu/year.'},
+  {t:'Train',d:'A single, complete, parallel liquefaction processing unit within an LNG plant. Large plants have multiple trains for redundancy and expandability.'},
+  {t:'C3MR',d:'Propane Pre-cooled Mixed Refrigerant — APCI\'s dominant liquefaction technology. Uses propane for pre-cooling and a mixed refrigerant for main cryogenic cooling.'},
+  {t:'FLNG',d:'Floating LNG — a vessel moored over an offshore field that processes, liquefies, stores, and offloads LNG without a subsea pipeline to shore.'},
+  {t:'FSRU',d:'Floating Storage and Regasification Unit — a vessel that stores LNG and converts it back to pipeline gas. Used as a faster/cheaper alternative to permanent onshore import terminals.'},
+  {t:'SPA',d:'Sale and Purchase Agreement — the main commercial contract between LNG seller and buyer, defining volumes, price formula, take-or-pay obligations, term, and delivery conditions.'},
+  {t:'Take-or-Pay (ToP)',d:'Contractual obligation for the buyer to pay for a minimum volume (typically 80–90% of ACQ) whether or not gas is physically lifted. The foundation of LNG project finance.'},
+  {t:'JCC',d:'Japan Crude Cocktail — the average price of crude oil imported into Japan. Primary indexation base for long-term Asian LNG contracts.'},
+  {t:'Slope (α)',d:'The percentage of oil price represented in the LNG pricing formula P = α × JCC + β. Typically 12–14%. The most commercially sensitive negotiation variable.'},
+  {t:'S-Curve',d:'Price cap and floor mechanism in LNG contracts that limits buyer exposure at high oil prices (ceiling) and seller exposure at low oil prices (floor).'},
+  {t:'Netback Pricing',d:'Wellhead gas value calculated by subtracting all downstream costs (processing, liquefaction, shipping, regas) from the delivered LNG price.'},
+  {t:'DSO',d:'Domestic Supply Obligation — regulatory requirement for gas producers to allocate a minimum percentage of production to the domestic market before exporting.'},
+  {t:'GMP',d:'Gas Master Plan — a government\'s strategic framework defining how national gas resources will be developed, allocated between domestic and export use, priced, and regulated.'},
+  {t:'NOC',d:'National Oil Company — state-owned petroleum entity (e.g., NNPC Nigeria, ENH Mozambique, TPDC Tanzania, Aramco Saudi Arabia).'},
+  {t:'IOC',d:'International Oil Company — private sector energy major (e.g., Shell, ExxonMobil, Total Energies, BP, Eni).'},
+  {t:'Integrated Structure',d:'LNG project where the same entities own both the upstream gas field and the liquefaction plant. Revenue flows directly from LNG buyers to the combined consortium.'},
+  {t:'Merchant Structure',d:'LNG project where separate entities own the upstream and the plant. The plant buys gas under a Gas SPA and sells LNG under LNG SPAs.'},
+  {t:'Tolling Structure',d:'LNG plant provides liquefaction as a service for a tariff. Does not take title to gas or LNG. The gas owner retains all commodity price exposure.'},
+  {t:'Gas Transfer Price',d:'In a Merchant structure, the price at which the upstream producer sells gas to the LNG plant company. Often contentious because different fiscal regimes apply to each segment.'},
+  {t:'FID',d:'Final Investment Decision — the moment of full capital commitment. Requires government approvals, enabling legislation, executed LNG SPAs, and committed project finance.'},
+  {t:'FEED',d:'Front End Engineering Design — detailed engineering phase (12–18 months, $40–80M) preceding FID. Produces cost estimates at ±15–25% accuracy.'},
+  {t:'EPC',d:'Engineering, Procurement & Construction — the main construction contract. The EPC contractor delivers a working plant at an agreed lump-sum price and schedule.'},
+  {t:'BOG',d:'Boil-Off Gas — LNG that naturally vaporises during storage or transit (~0.05–0.15%/day). Modern carriers use BOG as propulsion fuel.'},
+  {t:'Q-Max',d:'Qatar\'s largest LNG carrier class at 266,000 m³. Too large for the Panama Canal. Optimised for direct Qatar-to-Asia routes.'},
+  {t:'PSC/PSA',d:'Production Sharing Contract/Agreement — upstream legal framework where the IOC recovers costs then shares profits with the host government in defined proportions.'},
+  {t:'WAGP',d:'West Africa Gas Pipeline — 691km pipeline connecting Nigerian gas to Benin, Togo, and Ghana. Commissioned 2009 but chronically under-delivered due to upstream supply disruptions.'},
+  {t:'IPP',d:'Independent Power Producer — private company that owns and operates a power plant, selling electricity under a Power Purchase Agreement (PPA) to a utility.'},
+  {t:'Anchor Project',d:'A large gas-consuming project (LNG plant, power plant, methanol/fertiliser facility) whose volume and revenue justify investment in major gas infrastructure.'},
+  {t:'Price Re-opener',d:'LNG SPA clause allowing either party to request price renegotiation if market conditions change materially, typically exercisable every 3–5 years.'},
+  {t:'TCF',d:'Trillion Cubic Feet — standard unit for measuring large natural gas reserves. 1 TCF ≈ 28.3 billion cubic metres (BCM).'},
+  {t:'MMBtu',d:'Million British Thermal Units — standard energy unit for gas pricing. 1 MMBtu ≈ 1.055 GJ. Global LNG prices are quoted in $/MMBtu.'},
+];
+function renderGloss(){
+  const grid=document.getElementById('gloss-grid');if(!grid)return;
+  grid.innerHTML='';
+  GLOSSARY.forEach(g=>{
+    const d=document.createElement('div');d.className='gi';d.dataset.search=(g.t+' '+g.d).toLowerCase();
+    d.innerHTML=`<div class="gi-term">${g.t}</div><div class="gi-def">${g.d}</div>`;
+    grid.appendChild(d);
+  });
+}
+function filterGloss(v){
+  const low=v.toLowerCase();
+  document.querySelectorAll('.gi').forEach(g=>{g.classList.toggle('hidden',!!v&&!g.dataset.search.includes(low))});
+}
+
+/* ═════════════ AI TUTOR ═════════════ */
+// ▼▼▼ PASTE YOUR ANTHROPIC API KEY HERE ▼▼▼
+const ANTHROPIC_API_KEY = 'YOUR_API_KEY_HERE';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+let aiOpen=false;
+function toggleAI(){aiOpen=!aiOpen;document.getElementById('ai-drawer').classList.toggle('open',aiOpen)}
+function askAI(msg){document.getElementById('ai-input').value=msg;sendAI()}
+async function sendAI(){
+  const inp=document.getElementById('ai-input');
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value='';inp.style.height='38px';
+  const msgs=document.getElementById('ai-msgs');
+  // User message
+  const um=document.createElement('div');um.className='ai-msg user';um.textContent=msg;msgs.appendChild(um);
+  // Typing indicator
+  const tm=document.createElement('div');tm.className='ai-msg bot typing';
+  tm.innerHTML='<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  msgs.appendChild(tm);msgs.scrollTop=msgs.scrollHeight;
+  document.getElementById('ai-send').disabled=true;
+  const systemPrompt=`You are an expert LNG and natural gas instructor embedded in an interactive learning platform. The student is currently studying "${document.getElementById('ai-topic').textContent}". 
+
+Your role: Explain concepts clearly, concisely, and accurately using original explanations (not copying any copyrighted text). Use real-world examples, analogies, and numbers where helpful. Keep responses to 3–6 sentences unless the question genuinely requires more. Use markdown-style bold (**text**) for emphasis. Always be encouraging and educational.
+
+Core topics you cover: gas composition and processing, liquefaction physics and technology (C3MR, Cascade, FLNG), the 8-link LNG value chain, shipping and FSRU technology, oil-indexed pricing (P = α × JCC + β), take-or-pay contracts, netback pricing, project structures (Integrated/Merchant/Tolling), government policy (DSO, Gas Master Plans, fiscal regimes), LNG project development phases (Screening/Pre-FEED/FEED/FID/EPC), and African gas markets.`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:systemPrompt,messages:[{role:'user',content:msg}]})
+    });
+    const data=await resp.json();
+    tm.remove();
+    const bm=document.createElement('div');bm.className='ai-msg bot';
+    const text=(data.content&&data.content[0]&&data.content[0].text)||'I couldn\'t generate a response right now. Please try again.';
+    bm.innerHTML=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    msgs.appendChild(bm);
+  }catch(err){
+    tm.remove();
+    const em=document.createElement('div');em.className='ai-msg bot';
+    em.innerHTML='<strong>Note:</strong> AI responses require an active API connection. Try refreshing or check your network. In the meantime, use the knowledge checks and glossary to explore concepts!';
+    msgs.appendChild(em);
+  }
+  document.getElementById('ai-send').disabled=false;
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+/* ═════════════ INIT ═════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  // Hide all panels, show home
+  document.querySelectorAll('.panel').forEach(p=>{p.classList.remove('active');p.style.display='none'});
+  const home=document.getElementById('panel-home');
+  home.classList.add('active');home.style.display='block';
+  // Nav click handlers
+  document.querySelectorAll('.sn[data-panel]').forEach(n=>{
+    n.addEventListener('click',()=>go(n.dataset.panel));
+  });
+  updateProg();
+  // Auto-resize AI textarea
+  const ai=document.getElementById('ai-input');
+  if(ai)ai.addEventListener('input',()=>{ai.style.height='38px';ai.style.height=Math.min(ai.scrollHeight,120)+'px'});
+});
+</script>
+</body>
+</html>
